@@ -40,7 +40,7 @@ Unavailable metrics should be explained plainly rather than shown as empty value
 
 ### Practical troubleshooting
 
-A future `speakup doctor` command should create a local, reviewable diagnostic summary that is easy to attach to a support ticket. It should explain what information is included, avoid personal data, and never upload or transmit diagnostics automatically.
+A future `speakup doctor` command should print a local, reviewable diagnostic summary that is easy to inspect or intentionally redirect to a support file. It should explain what information is included, avoid personal data, and never upload or transmit diagnostics automatically.
 
 ### The `watch` command
 
@@ -121,8 +121,9 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How to distinguish a diagnostic check from normal reporting, and how to minimize sensitive information in support output.
 - **Read:** [Python's `platform` documentation](https://docs.python.org/3/library/platform.html), [Python's `tempfile` documentation](https://docs.python.org/3/library/tempfile.html) if report files are needed, and the project's metric and output documentation from earlier phases.
-- **What we will do:** Implement `speakup doctor` as an explicit, local diagnostic summary. Decide exactly which fields it includes, mark unavailable checks clearly, and require an intentional user action before writing a report file. Do not add automatic uploads.
-- **Deliverable:** A useful diagnostic report, documented privacy boundaries, and tests proving the report omits fields that are out of scope.
+- **Status:** Planned; see the [Phase 5 doctor and privacy plan](docs/phase-5-doctor-plan.md) for report scope, privacy boundaries, and tests.
+- **What we will do:** Implement `speakup doctor` as a local stdout report using the existing snapshot. Include collection limitations, do not make health judgments, and require intentional shell redirection if the user wants to save it.
+- **Deliverable:** A useful diagnostic report and tests proving sensitive fields are excluded and collection errors are surfaced.
 - **What you will learn:** Diagnostic design, data minimization, safe file handling, and testing what a report does not disclose.
 
 ### Phase 6 — Add `watch` as a terminal refresh command
