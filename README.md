@@ -103,8 +103,9 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How to format values consistently and how terminal output should behave in interactive terminals and pipes.
 - **Read:** [Rich documentation](https://rich.readthedocs.io/en/stable/), especially [console output](https://rich.readthedocs.io/en/stable/console.html) and [tables](https://rich.readthedocs.io/en/stable/tables.html); [Python's `shutil.get_terminal_size`](https://docs.python.org/3/library/shutil.html#shutil.get_terminal_size).
-- **What we will do:** Implement `speakup` as a single, concise snapshot with clear labels, units, and restrained status styling. Keep the layout compact, understandable without color, and appropriate for piped output.
-- **Deliverable:** A readable default report, with tests for formatting, rounding, missing values, and non-interactive output.
+- **Status:** Planned; see the [Phase 3 terminal output plan](docs/phase-3-terminal-output-plan.md) for report content, formatting, and test cases.
+- **What we will do:** Render the Phase 2 snapshot as one concise default report with consistent units, optional fields, warnings, and plain output for pipes. Do not add arbitrary health scores or thresholds.
+- **Deliverable:** A readable default report, with deterministic tests for formatting, missing values, errors, and non-interactive output.
 - **What you will learn:** Presentation versus data collection, terminal capabilities, formatting, accessibility, and output testing.
 
 ### Phase 4 — Add JSON and quiet automation modes
