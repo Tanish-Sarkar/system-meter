@@ -58,7 +58,7 @@ These commands describe the intended interface. Their CLI syntax is implemented,
 | `speakup doctor` | Print a local diagnostic summary, including which metrics are available. |
 | `speakup watch` | Repeatedly refresh the compact terminal snapshot until stopped. |
 
-The options and subcommands should have consistent help text and clear errors. Before implementing them, we will settle details such as how health thresholds affect `--quiet`, what the exit codes mean, and whether `doctor` supports a machine-readable format.
+The options and subcommands should have consistent help text and clear errors. The [Phase 4 plan](docs/phase-4-json-and-quiet-plan.md) defines JSON output and quiet-mode exit behavior; quiet mode checks collection success only and does not apply health thresholds.
 
 ## What makes it feel polished
 
@@ -112,8 +112,9 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** JSON serialization, designing stable machine-readable interfaces, and how shell scripts consume exit statuses.
 - **Read:** [Python's `json` documentation](https://docs.python.org/3/library/json.html), [Python's `sys` documentation](https://docs.python.org/3/library/sys.html), and [pytest's capture and monkeypatch guides](https://docs.pytest.org/en/stable/how-to/capture-stdout-stderr.html) as an optional testing reference (the project can continue using `unittest`).
-- **What we will do:** Implement `speakup --json` from the same snapshot data as the human output. Define and document the schema and exit-code contract. Implement `speakup --quiet` to suppress normal snapshot output and make its result usable in scripts; decide and test how health thresholds and collection errors affect its status.
-- **Deliverable:** Valid JSON that can be parsed by standard tools, documented exit behavior, and tests for output modes, errors, and option combinations.
+- **Status:** Planned; see the [Phase 4 JSON and quiet mode plan](docs/phase-4-json-and-quiet-plan.md) for the proposed schema, exit codes, and test cases.
+- **What we will do:** Implement `speakup --json` from the same snapshot as the human report, and make `speakup --quiet` a silent collection-success check. Quiet mode will not apply undefined health thresholds.
+- **Deliverable:** Versioned JSON output, documented exit behavior, and tests for valid output, optional values, errors, and option combinations.
 - **What you will learn:** Serialization, backward-compatible interfaces, stdout versus stderr, exit codes, and scripting/CI integration.
 
 ### Phase 5 — Build a privacy-conscious `doctor` command
