@@ -5,6 +5,7 @@ from importlib.metadata import version
 
 from speakup.collectors import SnapshotCollectionError, collect_snapshot
 from speakup.render import render_snapshot
+from speakup.serialization import SnapshotSerializationError, serialize_snapshot
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -50,16 +51,23 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "watch":
         return _not_implemented("Watch mode")
 
-    if args.json:
-        return _not_implemented("JSON snapshot output")
-    if args.quiet:
-        return _not_implemented("Quiet snapshot check mode")
-
     try:
         snapshot = collect_snapshot()
     except SnapshotCollectionError as exc:
         print(f"Unable to collect system snapshot: {exc}", file=sys.stderr)
         return 1
+
+    if args.quiet:
+        return 0
+
+    if args.json:
+        try:
+            output = serialize_snapshot(snapshot)
+        except SnapshotSerializationError as exc:
+            print(f"Unable to serialize system snapshot: {exc}", file=sys.stderr)
+            return 1
+        print(output)
+        return 0
 
     render_snapshot(snapshot)
     return 0

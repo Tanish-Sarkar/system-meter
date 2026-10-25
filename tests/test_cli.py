@@ -1,12 +1,14 @@
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from datetime import UTC, datetime
+import json
 from io import StringIO
 from unittest.mock import patch
 
 from speakup.collectors import SnapshotCollectionError
 from speakup.main import build_parser, main
 from speakup.models import CpuInfo, MemoryInfo, SystemInfo, SystemSnapshot
+from speakup.serialization import JSON_SCHEMA_VERSION, SnapshotSerializationError
 
 
 class MainTests(unittest.TestCase):
@@ -85,18 +87,95 @@ class MainTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "unexpected bug"):
                 main([])
 
-    def test_json_and_quiet_modes_remain_unimplemented(self):
-        expected = {
-            ("--json",): "JSON snapshot output is not implemented yet.\n",
-            ("--quiet",): "Quiet snapshot check mode is not implemented yet.\n",
-        }
+    def test_json_mode_serializes_one_snapshot_without_human_output(self):
+        snapshot = SystemSnapshot(
+            captured_at=datetime(2026, 1, 1, tzinfo=UTC),
+            uptime_seconds=60,
+            system=SystemInfo("Linux", "test", "x86_64"),
+            cpu=CpuInfo(8, 4, 25.0),
+            memory=MemoryInfo(1000, 600, 400, 40.0),
+            disks=(),
+            battery=None,
+            warnings=(),
+        )
 
-        for argv, message in expected.items():
-            with self.subTest(argv=argv):
-                status, stdout, stderr = self.run_cli(list(argv))
-                self.assertEqual(status, 1)
-                self.assertEqual(stdout, "")
-                self.assertEqual(stderr, message)
+        with patch("speakup.main.collect_snapshot", return_value=snapshot) as collect:
+            status, stdout, stderr = self.run_cli(["--json"])
+
+        self.assertEqual(status, 0)
+        self.assertEqual(json.loads(stdout)["schema_version"], JSON_SCHEMA_VERSION)
+        self.assertTrue(stdout.endswith("\n"))
+        self.assertNotIn("System Meter", stdout)
+        self.assertNotIn("\x1b[", stdout)
+        self.assertEqual(stderr, "")
+        collect.assert_called_once_with()
+
+    def test_quiet_mode_collects_once_and_emits_nothing(self):
+        snapshot = SystemSnapshot(
+            captured_at=datetime(2026, 1, 1, tzinfo=UTC),
+            uptime_seconds=60,
+            system=SystemInfo("Linux", "test", "x86_64"),
+            cpu=CpuInfo(8, 4, 25.0),
+            memory=MemoryInfo(1000, 600, 400, 40.0),
+            disks=(),
+            battery=None,
+            warnings=("optional metric unavailable",),
+        )
+
+        with patch("speakup.main.collect_snapshot", return_value=snapshot) as collect:
+            status, stdout, stderr = self.run_cli(["--quiet"])
+
+        self.assertEqual(status, 0)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "")
+        collect.assert_called_once_with()
+
+    def test_json_collection_failure_has_no_partial_output(self):
+        with patch(
+            "speakup.main.collect_snapshot",
+            side_effect=SnapshotCollectionError("CPU unavailable"),
+        ):
+            status, stdout, stderr = self.run_cli(["--json"])
+
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertIn("Unable to collect system snapshot", stderr)
+
+    def test_quiet_collection_failure_is_silent_on_stdout(self):
+        with patch(
+            "speakup.main.collect_snapshot",
+            side_effect=SnapshotCollectionError("CPU unavailable"),
+        ):
+            status, stdout, stderr = self.run_cli(["--quiet"])
+
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertIn("Unable to collect system snapshot", stderr)
+
+    def test_json_serialization_failure_has_no_partial_output(self):
+        with (
+            patch("speakup.main.collect_snapshot"),
+            patch(
+                "speakup.main.serialize_snapshot",
+                side_effect=SnapshotSerializationError("invalid snapshot"),
+            ),
+        ):
+            status, stdout, stderr = self.run_cli(["--json"])
+
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertIn("Unable to serialize system snapshot", stderr)
+
+    def test_unexpected_json_serialization_errors_are_not_silenced(self):
+        with (
+            patch("speakup.main.collect_snapshot"),
+            patch(
+                "speakup.main.serialize_snapshot",
+                side_effect=RuntimeError("unexpected bug"),
+            ),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "unexpected bug"):
+                main(["--json"])
 
     def test_subcommands_report_not_implemented_on_stderr(self):
         expected = {

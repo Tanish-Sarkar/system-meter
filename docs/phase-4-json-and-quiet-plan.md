@@ -2,7 +2,7 @@
 
 This document turns Phase 4 of the [project roadmap](../README.md#learning-first-development-plan) into an implementation and testing plan. Phase 2 provides structured snapshots and Phase 3 renders them for people; Phase 4 will expose the same snapshot to scripts and add a silent collection check.
 
-**Status:** Planned. `--json` and `--quiet` are currently recognized but intentionally report that their behavior is not implemented.
+**Status:** Implemented and tested. The acceptance checklist below records the completed Phase 4 behavior.
 
 ## Goal
 
@@ -29,7 +29,7 @@ Study these resources before implementing:
 
 ## Proposed JSON contract
 
-Emit exactly one JSON object followed by a newline on stdout. Use UTF-8 text, standard JSON types, and no Rich styling or other text before or after the object. Make the schema explicit and version it from its first release.
+Emit exactly one JSON object followed by a newline on stdout. Use ASCII escapes for non-ASCII characters so the JSON remains valid UTF-8 even when a Windows terminal uses a legacy output encoding. Use standard JSON types, with no Rich styling or other text before or after the object. Make the schema explicit and version it from its first release.
 
 Example shape:
 
@@ -177,17 +177,17 @@ All tests should use a fixed `SystemSnapshot` and mocked collector calls. They s
 
 ## Acceptance checklist
 
-- [ ] The JSON schema is versioned, documented, and mapped explicitly from `SystemSnapshot`.
-- [ ] `speakup --json` emits exactly one valid JSON document and newline on stdout.
-- [ ] JSON includes the defined snapshot fields, numeric units, null optional values, and warnings.
-- [ ] JSON output has no Rich styling, ANSI escape codes, or human-readable banner.
-- [ ] JSON collection failures return 1, explain the error on stderr, and leave stdout empty.
-- [ ] `speakup --quiet` collects once, returns 0 on successful collection, and emits no output.
-- [ ] Quiet collection failures return 1 and report to stderr without stdout output.
-- [ ] Quiet mode does not infer health or apply thresholds.
-- [ ] `--json --quiet` and mode flags on `doctor`/`watch` remain invalid.
-- [ ] Tests parse output using `json.loads`, use mocks/fixed snapshots, and cover error and optional-value cases.
-- [ ] Existing default output and Phase 1/2/3 tests still pass.
+- [x] The JSON schema is versioned, documented, and mapped explicitly from `SystemSnapshot`.
+- [x] `speakup --json` emits exactly one valid JSON document and newline on stdout.
+- [x] JSON includes the defined snapshot fields, numeric units, null optional values, and warnings.
+- [x] JSON output has no Rich styling, ANSI escape codes, or human-readable banner.
+- [x] JSON collection failures return 1, explain the error on stderr, and leave stdout empty.
+- [x] `speakup --quiet` collects once, returns 0 on successful collection, and emits no output.
+- [x] Quiet collection failures return 1 and report to stderr without stdout output.
+- [x] Quiet mode does not infer health or apply thresholds.
+- [x] `--json --quiet` and mode flags on `doctor`/`watch` remain invalid.
+- [x] Tests parse output using `json.loads`, use mocks/fixed snapshots, and cover error and optional-value cases.
+- [x] Existing default output and Phase 1/2/3 tests still pass.
 
 ## Deliverable and learning outcome
 

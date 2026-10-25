@@ -2,7 +2,7 @@
 
 System Meter (`speakup`) is a cross-platform command-line tool for getting a fast snapshot of a computer's system information. It aims to help developers, IT/helpdesk teams, and operators quickly inspect resource usage without opening a graphical system monitor.
 
-> **Status:** The default `speakup` command now collects and displays a human-readable system snapshot. The planned JSON output, quiet health checks, diagnostic report, and watch mode are not implemented yet.
+> **Status:** The default `speakup` command displays a human-readable snapshot. `speakup --json` emits versioned JSON, and `speakup --quiet` checks whether snapshot collection succeeds without printing on success. Diagnostic reports and watch mode are not implemented yet.
 
 ## Product direction
 
@@ -33,8 +33,8 @@ Unavailable metrics should be explained plainly rather than shown as empty value
 ### Useful to people and automation
 
 - Human-readable terminal output by default, with restrained color and clear status indicators.
-- A `--json` option with a documented, stable schema for scripts and integrations.
-- A `--quiet` option for checks that should not print a normal snapshot; the result should be communicated through a documented exit status.
+- A `--json` option with a versioned schema for scripts and integrations.
+- A `--quiet` option that silently checks collection success and communicates failures through its exit status; it does not judge system health.
 - Predictable exit codes, a no-color mode, and sensible behavior in pipes and CI logs.
 - Thresholds that can eventually be configured to match a team's environment rather than imposing universal assumptions.
 
@@ -48,17 +48,17 @@ A future `speakup doctor` command should create a local, reviewable diagnostic s
 
 ## Planned command interface
 
-These commands describe the intended interface. Their CLI syntax is implemented, but the system-reporting behavior is **not implemented yet**:
+These commands describe the CLI. Implemented behavior is noted; planned behavior remains **not implemented yet**:
 
 | Command | Intended purpose |
 | --- | --- |
 | `speakup` | Print one concise, human-readable system snapshot. |
-| `speakup --json` | Print one snapshot as JSON using a documented, stable schema. |
-| `speakup --quiet` | Suppress the normal snapshot output and communicate the check result through the exit status. |
-| `speakup doctor` | Print a local diagnostic summary, including which metrics are available. |
-| `speakup watch` | Repeatedly refresh the compact terminal snapshot until stopped. |
+| `speakup --json` | **Implemented:** Print one snapshot as versioned JSON. See the [JSON schema plan](docs/phase-4-json-and-quiet-plan.md#proposed-json-contract). |
+| `speakup --quiet` | **Implemented:** Silently check collection success; no health thresholds are applied. |
+| `speakup doctor` | **Planned:** Print a local diagnostic summary, including which metrics are available. |
+| `speakup watch` | **Planned:** Repeatedly refresh the compact terminal snapshot until stopped. |
 
-The options and subcommands should have consistent help text and clear errors. The [Phase 4 plan](docs/phase-4-json-and-quiet-plan.md) defines JSON output and quiet-mode exit behavior; quiet mode checks collection success only and does not apply health thresholds.
+The options and subcommands should have consistent help text and clear errors. The [Phase 4 plan](docs/phase-4-json-and-quiet-plan.md) documents JSON compatibility and quiet-mode exit behavior.
 
 ## What makes it feel polished
 
@@ -112,7 +112,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** JSON serialization, designing stable machine-readable interfaces, and how shell scripts consume exit statuses.
 - **Read:** [Python's `json` documentation](https://docs.python.org/3/library/json.html), [Python's `sys` documentation](https://docs.python.org/3/library/sys.html), and [pytest's capture and monkeypatch guides](https://docs.pytest.org/en/stable/how-to/capture-stdout-stderr.html) as an optional testing reference (the project can continue using `unittest`).
-- **Status:** Planned; see the [Phase 4 JSON and quiet mode plan](docs/phase-4-json-and-quiet-plan.md) for the proposed schema, exit codes, and test cases.
+- **Status:** Implemented and tested; see the [Phase 4 JSON and quiet mode plan](docs/phase-4-json-and-quiet-plan.md) for the schema, exit codes, and test coverage.
 - **What we will do:** Implement `speakup --json` from the same snapshot as the human report, and make `speakup --quiet` a silent collection-success check. Quiet mode will not apply undefined health thresholds.
 - **Deliverable:** Versioned JSON output, documented exit behavior, and tests for valid output, optional values, errors, and option combinations.
 - **What you will learn:** Serialization, backward-compatible interfaces, stdout versus stderr, exit codes, and scripting/CI integration.
