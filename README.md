@@ -86,7 +86,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How command-line arguments, options, subcommands, help, and parse errors work.
 - **Read:** [Python's `argparse` tutorial](https://docs.python.org/3/howto/argparse.html), [the `argparse` reference](https://docs.python.org/3/library/argparse.html), and [Python Packaging: entry points](https://packaging.python.org/en/latest/specifications/entry-points/).
-- **What we will do:** Replace the initialization-only stub with a parser for `speakup`, `--json`, `--quiet`, `doctor`, and `watch`. Keep parsing separate from metric collection and output. Write down option combinations and exit-code behavior before they become public behavior.
+- **What we will do:** Follow the [Phase 1 CLI plan](docs/phase-1-cli-plan.md) to settle the command contract, then replace the initialization-only stub with a parser for `speakup`, `--json`, `--quiet`, `doctor`, and `watch`. Keep parsing separate from metric collection and output.
 - **Deliverable:** All requested commands appear in `--help`, route to deliberate handlers, and have parser tests—even where a handler temporarily reports that its feature is not ready.
 - **What you will learn:** CLI design, argument parsing, separation of responsibilities, error handling, and how to test command behavior without depending on a real machine's metrics.
 
