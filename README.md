@@ -48,7 +48,7 @@ A future `speakup doctor` command should create a local, reviewable diagnostic s
 
 ## Planned command interface
 
-These commands describe the intended interface; they are **not implemented yet**:
+These commands describe the intended interface. Their CLI syntax is implemented, but the system-reporting behavior is **not implemented yet**:
 
 | Command | Intended purpose |
 | --- | --- |
@@ -94,8 +94,9 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** Which system metrics `psutil` provides, which are platform-dependent, and how to represent unavailable values.
 - **Read:** [psutil documentation](https://psutil.readthedocs.io/en/latest/), especially its CPU, memory, disk, battery, and system functions; [Python's `dataclasses` documentation](https://docs.python.org/3/library/dataclasses.html).
-- **What we will do:** Create a small, typed snapshot model and independent collectors for CPU, memory, disks, battery, uptime, and basic operating-system details. Handle missing batteries, inaccessible mounts, and unsupported metrics explicitly.
-- **Deliverable:** Collectors return structured data that can be tested with controlled inputs, plus tests for available and unavailable metrics.
+- **Status:** Planned; see the [Phase 2 metrics and testing plan](docs/phase-2-metrics-plan.md) for data model, collector behavior, and test cases.
+- **What we will do:** Create a typed snapshot and independent collectors for CPU, memory, disks, optional battery, uptime, and basic operating-system details. Mock platform calls so missing metrics and collection errors can be tested deterministically.
+- **Deliverable:** Structured snapshot data and unit tests for available, unavailable, and failed metric collection.
 - **What you will learn:** Calling a third-party API, modeling data, type hints, platform differences, exceptions, and isolating hardware access behind testable functions.
 
 ### Phase 3 — Make the default snapshot clear and polished
