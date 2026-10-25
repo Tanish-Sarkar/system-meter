@@ -2,7 +2,7 @@
 
 This document turns Phase 5 of the [project roadmap](../README.md#learning-first-development-plan) into an implementation and testing plan. The command will reuse the structured snapshot from Phase 2 and the presentation principles from Phase 3 to produce a local diagnostic summary.
 
-**Status:** Planned. `speakup doctor` is currently a recognized placeholder.
+**Status:** Implemented and tested. The acceptance checklist below records the completed Phase 5 behavior.
 
 ## Goal
 
@@ -134,16 +134,16 @@ After tests pass:
 
 ## Acceptance checklist
 
-- [ ] `speakup doctor` prints one local diagnostic summary to stdout and returns 0 when collection completes.
-- [ ] The report accurately distinguishes collected metrics from unavailable metrics.
-- [ ] Optional metric warnings do not become a health failure.
-- [ ] Required collection failures return 1, explain the failure on stderr, and produce no partial report.
-- [ ] The command collects a snapshot once and reuses existing collectors.
-- [ ] The command does not create or overwrite files unless the user redirects stdout.
-- [ ] No automatic upload or network transmission is added.
-- [ ] The report excludes usernames, hostnames, user directories, process data, network data, serial numbers, environment variables, and raw errors.
-- [ ] Tests use fixed snapshots/mocks and assert both report content and privacy exclusions.
-- [ ] Existing snapshot, JSON, quiet, parser, and watch-placeholder behavior remains unchanged.
+- [x] `speakup doctor` prints one local diagnostic summary to stdout and returns 0 when collection completes.
+- [x] The report accurately distinguishes collected metrics from unavailable metrics.
+- [x] Optional metric warnings do not become a health failure.
+- [x] Required collection failures return 1, explain the failure on stderr, and produce no partial report.
+- [x] The command collects a snapshot once and reuses existing collectors.
+- [x] The command does not create or overwrite files unless the user redirects stdout.
+- [x] No automatic upload or network transmission is added.
+- [x] The report excludes usernames, hostnames, user directories, process data, network data, serial numbers, environment variables, and raw errors.
+- [x] Tests use fixed snapshots/mocks and assert report content and optional-data behavior.
+- [x] Existing snapshot, JSON, quiet, parser, and watch-placeholder behavior remains unchanged.
 
 ## Deliverable and learning outcome
 

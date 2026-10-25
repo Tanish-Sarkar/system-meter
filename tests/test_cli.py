@@ -177,18 +177,55 @@ class MainTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "unexpected bug"):
                 main(["--json"])
 
-    def test_subcommands_report_not_implemented_on_stderr(self):
-        expected = {
-            "doctor": "The doctor command is not implemented yet.\n",
-            "watch": "Watch mode is not implemented yet.\n",
-        }
+    def test_doctor_renders_one_snapshot_to_stdout(self):
+        snapshot = SystemSnapshot(
+            captured_at=datetime(2026, 1, 1, tzinfo=UTC),
+            uptime_seconds=60,
+            system=SystemInfo("Linux", "test", "x86_64"),
+            cpu=CpuInfo(8, 4, 25.0),
+            memory=MemoryInfo(1000, 600, 400, 40.0),
+            disks=(),
+            battery=None,
+            warnings=("optional metric unavailable",),
+        )
 
-        for command, message in expected.items():
-            with self.subTest(command=command):
-                status, stdout, stderr = self.run_cli([command])
-                self.assertEqual(status, 1)
-                self.assertEqual(stdout, "")
-                self.assertEqual(stderr, message)
+        with patch("speakup.main.collect_snapshot", return_value=snapshot) as collect:
+            status, stdout, stderr = self.run_cli(["doctor"])
+
+        self.assertEqual(status, 0)
+        self.assertIn("System Meter Doctor", stdout)
+        self.assertIn("optional metric unavailable", stdout)
+        self.assertEqual(stderr, "")
+        collect.assert_called_once_with()
+
+    def test_doctor_collection_failure_reports_error_without_partial_report(self):
+        with patch(
+            "speakup.main.collect_snapshot",
+            side_effect=SnapshotCollectionError("Unable to collect CPU information."),
+        ):
+            status, stdout, stderr = self.run_cli(["doctor"])
+
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertEqual(
+            stderr,
+            "Unable to collect doctor report: Unable to collect CPU information.\n",
+        )
+
+    def test_unexpected_doctor_errors_are_not_silenced(self):
+        with patch(
+            "speakup.main.collect_snapshot",
+            side_effect=RuntimeError("unexpected bug"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "unexpected bug"):
+                main(["doctor"])
+
+    def test_watch_remains_unimplemented(self):
+        status, stdout, stderr = self.run_cli(["watch"])
+
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "Watch mode is not implemented yet.\n")
 
     def test_snapshot_output_modes_are_mutually_exclusive(self):
         stderr = StringIO()

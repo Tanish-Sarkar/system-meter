@@ -2,7 +2,7 @@
 
 System Meter (`speakup`) is a cross-platform command-line tool for getting a fast snapshot of a computer's system information. It aims to help developers, IT/helpdesk teams, and operators quickly inspect resource usage without opening a graphical system monitor.
 
-> **Status:** The default `speakup` command displays a human-readable snapshot. `speakup --json` emits versioned JSON, and `speakup --quiet` checks whether snapshot collection succeeds without printing on success. Diagnostic reports and watch mode are not implemented yet.
+> **Status:** The default `speakup` command displays a human-readable snapshot. `speakup --json` emits versioned JSON, `speakup --quiet` silently checks whether snapshot collection succeeds, and `speakup doctor` prints a local diagnostic summary. Watch mode is not implemented yet.
 
 ## Product direction
 
@@ -55,7 +55,7 @@ These commands describe the CLI. Implemented behavior is noted; planned behavior
 | `speakup` | Print one concise, human-readable system snapshot. |
 | `speakup --json` | **Implemented:** Print one snapshot as versioned JSON. See the [JSON schema plan](docs/phase-4-json-and-quiet-plan.md#proposed-json-contract). |
 | `speakup --quiet` | **Implemented:** Silently check collection success; no health thresholds are applied. |
-| `speakup doctor` | **Planned:** Print a local diagnostic summary, including which metrics are available. |
+| `speakup doctor` | **Implemented:** Print a local diagnostic summary of collected metrics and limitations. The report is not a health assessment. |
 | `speakup watch` | **Planned:** Repeatedly refresh the compact terminal snapshot until stopped. |
 
 The options and subcommands should have consistent help text and clear errors. The [Phase 4 plan](docs/phase-4-json-and-quiet-plan.md) documents JSON compatibility and quiet-mode exit behavior.
@@ -121,7 +121,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How to distinguish a diagnostic check from normal reporting, and how to minimize sensitive information in support output.
 - **Read:** [Python's `platform` documentation](https://docs.python.org/3/library/platform.html), [Python's `tempfile` documentation](https://docs.python.org/3/library/tempfile.html) if report files are needed, and the project's metric and output documentation from earlier phases.
-- **Status:** Planned; see the [Phase 5 doctor and privacy plan](docs/phase-5-doctor-plan.md) for report scope, privacy boundaries, and tests.
+- **Status:** Implemented and tested; see the [Phase 5 doctor and privacy plan](docs/phase-5-doctor-plan.md) for report scope, privacy boundaries, and test coverage.
 - **What we will do:** Implement `speakup doctor` as a local stdout report using the existing snapshot. Include collection limitations, do not make health judgments, and require intentional shell redirection if the user wants to save it.
 - **Deliverable:** A useful diagnostic report and tests proving sensitive fields are excluded and collection errors are surfaced.
 - **What you will learn:** Diagnostic design, data minimization, safe file handling, and testing what a report does not disclose.

@@ -16,7 +16,7 @@ from speakup.models import (
     SystemInfo,
     SystemSnapshot,
 )
-from speakup.render import render_snapshot
+from speakup.render import render_doctor_report, render_snapshot
 
 
 def make_snapshot(
@@ -62,6 +62,24 @@ def render_to_string(snapshot: SystemSnapshot, *, width: int = 100) -> str:
         soft_wrap=True,
     )
     render_snapshot(snapshot, console)
+    return output.getvalue()
+
+
+def render_doctor_to_string(
+    snapshot: SystemSnapshot,
+    *,
+    width: int = 100,
+) -> str:
+    output = StringIO()
+    console = Console(
+        file=output,
+        width=width,
+        no_color=True,
+        markup=False,
+        highlight=False,
+        soft_wrap=True,
+    )
+    render_doctor_report(snapshot, console)
     return output.getvalue()
 
 
@@ -173,3 +191,57 @@ class RenderTests(unittest.TestCase):
             render_snapshot(make_snapshot())
 
         self.assertIsNone(re.search(r"\x1b\[[0-?]*[ -/]*[@-~]", output.getvalue()))
+
+    def test_doctor_report_contains_metrics_and_availability_notice(self):
+        output = render_doctor_to_string(
+            make_snapshot(
+                battery=BatteryInfo(73.0, False),
+                warnings=("Unable to collect storage information for mount point '/mnt/data'.",),
+            )
+        )
+
+        for text in (
+            "System Meter Doctor",
+            "Captured: 2026-01-02 03:04:05 UTC",
+            "Metric availability is not a health assessment.",
+            "Windows 11",
+            "CPU usage",
+            "Memory used",
+            "Storage",
+            "Battery",
+            "73.0%",
+            "on battery",
+            "Availability and limitations",
+            "Unable to collect storage information",
+        ):
+            with self.subTest(text=text):
+                self.assertIn(text, output)
+
+    def test_doctor_report_handles_missing_optional_values(self):
+        snapshot = make_snapshot(
+            system=SystemInfo(None, None, None),
+            cpu=CpuInfo(4, None, 0.0),
+            disks=(),
+            battery=None,
+            warnings=(),
+        )
+        output = render_doctor_to_string(snapshot)
+
+        self.assertIn("not available", output)
+        self.assertIn("No storage information available.", output)
+        self.assertIn("No collection limitations were reported.", output)
+        self.assertNotIn("Battery", output)
+        self.assertIn("not a health assessment", output)
+
+    def test_doctor_report_renders_external_text_literally(self):
+        warning = "[bold]warning[/bold] C:\\private\\profile"
+        snapshot = make_snapshot(warnings=(warning,))
+
+        output = render_doctor_to_string(snapshot)
+
+        self.assertIn(warning, output)
+
+    def test_doctor_report_is_plain_without_color(self):
+        output = render_doctor_to_string(make_snapshot())
+
+        self.assertIsNone(re.search(r"\x1b\[[0-?]*[ -/]*[@-~]", output))

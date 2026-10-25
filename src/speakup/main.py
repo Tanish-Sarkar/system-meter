@@ -4,7 +4,7 @@ import sys
 from importlib.metadata import version
 
 from speakup.collectors import SnapshotCollectionError, collect_snapshot
-from speakup.render import render_snapshot
+from speakup.render import render_doctor_report, render_snapshot
 from speakup.serialization import SnapshotSerializationError, serialize_snapshot
 
 
@@ -46,16 +46,19 @@ def _not_implemented(feature: str) -> int:
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
 
-    if args.command == "doctor":
-        return _not_implemented("The doctor command")
     if args.command == "watch":
         return _not_implemented("Watch mode")
 
     try:
         snapshot = collect_snapshot()
     except SnapshotCollectionError as exc:
-        print(f"Unable to collect system snapshot: {exc}", file=sys.stderr)
+        action = "doctor report" if args.command == "doctor" else "system snapshot"
+        print(f"Unable to collect {action}: {exc}", file=sys.stderr)
         return 1
+
+    if args.command == "doctor":
+        render_doctor_report(snapshot)
+        return 0
 
     if args.quiet:
         return 0
