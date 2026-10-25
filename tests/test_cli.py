@@ -1,8 +1,12 @@
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
+from datetime import UTC, datetime
 from io import StringIO
+from unittest.mock import patch
 
+from speakup.collectors import SnapshotCollectionError
 from speakup.main import build_parser, main
+from speakup.models import CpuInfo, MemoryInfo, SystemInfo, SystemSnapshot
 
 
 class MainTests(unittest.TestCase):
@@ -37,9 +41,52 @@ class MainTests(unittest.TestCase):
         self.assertEqual(raised.exception.code, 0)
         self.assertRegex(output.getvalue(), r"^speakup \d+\.\d+\.\d+\n$")
 
-    def test_snapshot_modes_report_not_implemented_on_stderr(self):
+    def test_default_command_renders_one_collected_snapshot(self):
+        snapshot = SystemSnapshot(
+            captured_at=datetime(2026, 1, 1, tzinfo=UTC),
+            uptime_seconds=60,
+            system=SystemInfo("Linux", "test", "x86_64"),
+            cpu=CpuInfo(8, 4, 25.0),
+            memory=MemoryInfo(1000, 600, 400, 40.0),
+            disks=(),
+            battery=None,
+            warnings=(),
+        )
+
+        with patch("speakup.main.collect_snapshot", return_value=snapshot) as collect:
+            status, stdout, stderr = self.run_cli([])
+
+        self.assertEqual(status, 0)
+        self.assertIn("System Meter", stdout)
+        self.assertIn("Linux test", stdout)
+        self.assertIn("40.0%", stdout)
+        self.assertEqual(stderr, "")
+        collect.assert_called_once_with()
+
+    def test_collection_failure_is_reported_on_stderr(self):
+        with patch(
+            "speakup.main.collect_snapshot",
+            side_effect=SnapshotCollectionError("Unable to collect CPU information."),
+        ):
+            status, stdout, stderr = self.run_cli([])
+
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertEqual(
+            stderr,
+            "Unable to collect system snapshot: Unable to collect CPU information.\n",
+        )
+
+    def test_unexpected_collection_errors_are_not_silenced(self):
+        with patch(
+            "speakup.main.collect_snapshot",
+            side_effect=RuntimeError("unexpected bug"),
+        ):
+            with self.assertRaisesRegex(RuntimeError, "unexpected bug"):
+                main([])
+
+    def test_json_and_quiet_modes_remain_unimplemented(self):
         expected = {
-            (): "System snapshot output is not implemented yet.\n",
             ("--json",): "JSON snapshot output is not implemented yet.\n",
             ("--quiet",): "Quiet snapshot check mode is not implemented yet.\n",
         }

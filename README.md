@@ -1,8 +1,8 @@
 # System Meter
 
-System Meter (`speakup`) is a planned, cross-platform command-line tool for getting a fast, trustworthy snapshot of a computer's health. It aims to help developers, IT/helpdesk teams, and operators quickly understand resource pressure and share useful diagnostics without opening a graphical system monitor.
+System Meter (`speakup`) is a cross-platform command-line tool for getting a fast snapshot of a computer's system information. It aims to help developers, IT/helpdesk teams, and operators quickly inspect resource usage without opening a graphical system monitor.
 
-> **Status:** The Phase 1 CLI skeleton is implemented: help/version, argument validation, and routing for the planned commands work. System metrics, JSON output, quiet health checks, diagnostic reporting, and watch behavior are not implemented yet; those commands currently report that their feature is unavailable.
+> **Status:** The default `speakup` command now collects and displays a human-readable system snapshot. The planned JSON output, quiet health checks, diagnostic report, and watch mode are not implemented yet.
 
 ## Product direction
 
@@ -103,7 +103,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How to format values consistently and how terminal output should behave in interactive terminals and pipes.
 - **Read:** [Rich documentation](https://rich.readthedocs.io/en/stable/), especially [console output](https://rich.readthedocs.io/en/stable/console.html) and [tables](https://rich.readthedocs.io/en/stable/tables.html); [Python's `shutil.get_terminal_size`](https://docs.python.org/3/library/shutil.html#shutil.get_terminal_size).
-- **Status:** Planned; see the [Phase 3 terminal output plan](docs/phase-3-terminal-output-plan.md) for report content, formatting, and test cases.
+- **Status:** Implemented and tested; see the [Phase 3 terminal output plan](docs/phase-3-terminal-output-plan.md) for report content, formatting, and test coverage.
 - **What we will do:** Render the Phase 2 snapshot as one concise default report with consistent units, optional fields, warnings, and plain output for pipes. Do not add arbitrary health scores or thresholds.
 - **Deliverable:** A readable default report, with deterministic tests for formatting, missing values, errors, and non-interactive output.
 - **What you will learn:** Presentation versus data collection, terminal capabilities, formatting, accessibility, and output testing.

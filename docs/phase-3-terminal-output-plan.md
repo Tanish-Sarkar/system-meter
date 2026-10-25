@@ -2,7 +2,7 @@
 
 This document turns Phase 3 of the [project roadmap](../README.md#learning-first-development-plan) into an implementation and testing plan. Phase 2 already collects a structured `SystemSnapshot`; Phase 3 will format that data and make `speakup` display one snapshot.
 
-**Status:** Planned. No report renderer is implemented yet.
+**Status:** Implemented and tested. The checklist below records the completed Phase 3 scope.
 
 ## Goal
 
@@ -132,16 +132,16 @@ These are usability smoke checks, not substitutes for deterministic unit tests. 
 
 ## Acceptance checklist
 
-- [ ] `speakup` collects and displays one snapshot using the Phase 2 model.
-- [ ] Rendering is separate from collection and makes no system calls.
-- [ ] The report includes system, CPU, memory, storage, uptime, optional battery, and warnings where available.
-- [ ] Byte values, percentages, and uptime are formatted consistently and tested at boundaries.
-- [ ] Unknown values are not shown as zero or as fabricated measurements.
-- [ ] Output is understandable without color and contains no ANSI codes when piped.
-- [ ] Collection failures go to stderr, return status 1, and do not produce a success-shaped report.
-- [ ] Tests use fixed snapshots and mocks rather than machine-specific values.
-- [ ] All Phase 1 CLI tests still pass.
-- [ ] `--json`, `--quiet`, `doctor`, and `watch` remain outside Phase 3.
+- [x] `speakup` collects and displays one snapshot using the Phase 2 model.
+- [x] Rendering is separate from collection and makes no system calls.
+- [x] The report includes system, CPU, memory, storage, uptime, optional battery, and warnings where available.
+- [x] Byte values, percentages, and uptime are formatted consistently and tested at boundaries.
+- [x] Unknown values are not shown as zero or as fabricated measurements.
+- [x] Output is understandable without color and contains no ANSI codes when piped.
+- [x] Collection failures go to stderr, return status 1, and do not produce a success-shaped report.
+- [x] Tests use fixed snapshots and mocks rather than machine-specific values.
+- [x] All Phase 1 CLI tests still pass.
+- [x] `--json`, `--quiet`, `doctor`, and `watch` remain outside Phase 3.
 
 ## Deliverable and learning outcome
 

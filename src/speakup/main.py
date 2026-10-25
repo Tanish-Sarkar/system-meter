@@ -1,7 +1,10 @@
 import argparse
-import sys
 from collections.abc import Sequence
+import sys
 from importlib.metadata import version
+
+from speakup.collectors import SnapshotCollectionError, collect_snapshot
+from speakup.render import render_snapshot
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -51,7 +54,15 @@ def main(argv: Sequence[str] | None = None) -> int:
         return _not_implemented("JSON snapshot output")
     if args.quiet:
         return _not_implemented("Quiet snapshot check mode")
-    return _not_implemented("System snapshot output")
+
+    try:
+        snapshot = collect_snapshot()
+    except SnapshotCollectionError as exc:
+        print(f"Unable to collect system snapshot: {exc}", file=sys.stderr)
+        return 1
+
+    render_snapshot(snapshot)
+    return 0
 
 
 if __name__ == "__main__":
