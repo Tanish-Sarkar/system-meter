@@ -94,7 +94,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** Which system metrics `psutil` provides, which are platform-dependent, and how to represent unavailable values.
 - **Read:** [psutil documentation](https://psutil.readthedocs.io/en/latest/), especially its CPU, memory, disk, battery, and system functions; [Python's `dataclasses` documentation](https://docs.python.org/3/library/dataclasses.html).
-- **Status:** Planned; see the [Phase 2 metrics and testing plan](docs/phase-2-metrics-plan.md) for data model, collector behavior, and test cases.
+- **Status:** Implemented and tested; see the [Phase 2 metrics and testing plan](docs/phase-2-metrics-plan.md) for data model, collector behavior, and test coverage.
 - **What we will do:** Create a typed snapshot and independent collectors for CPU, memory, disks, optional battery, uptime, and basic operating-system details. Mock platform calls so missing metrics and collection errors can be tested deterministically.
 - **Deliverable:** Structured snapshot data and unit tests for available, unavailable, and failed metric collection.
 - **What you will learn:** Calling a third-party API, modeling data, type hints, platform differences, exceptions, and isolating hardware access behind testable functions.

@@ -2,7 +2,7 @@
 
 This document turns Phase 2 of the [project roadmap](../README.md#learning-first-development-plan) into an implementation and test plan. The goal is to collect structured system information reliably; formatting the terminal report and wiring real output into the CLI remain Phase 3.
 
-**Status:** Planned. No metric collectors or snapshot model have been implemented yet.
+**Status:** Implemented and tested. See the acceptance checklist for completed scope; CLI rendering remains for Phase 3.
 
 ## Goal
 
@@ -38,9 +38,9 @@ SystemSnapshot
   system: SystemInfo
   cpu: CpuInfo
   memory: MemoryInfo
-  disks: list[DiskInfo]
+  disks: tuple[DiskInfo, ...]
   battery: BatteryInfo | None
-  warnings: list[str]
+  warnings: tuple[str, ...]
 ```
 
 Recommended field choices:
@@ -134,16 +134,16 @@ After deterministic tests pass, run a local snippet or temporary test to inspect
 
 ## Acceptance checklist
 
-- [ ] Snapshot and metric model types are explicit, typed, and contain raw values rather than formatted strings.
-- [ ] `collect_snapshot()` returns system, CPU, memory, storage, battery-if-reported, uptime, and capture time.
-- [ ] Unsupported or missing battery data does not fail the snapshot or invent a value.
-- [ ] A disk that cannot be queried does not prevent collecting other accessible disks; a warning explains the omission.
-- [ ] Failures in required collectors are surfaced explicitly.
-- [ ] CPU sampling uses a meaningful documented interval, not an invalid first non-blocking reading.
-- [ ] Unit tests use mocks/fixed values and do not depend on actual host metrics.
-- [ ] Tests cover normal values, missing optional values, inaccessible mounts, and required-call failures.
-- [ ] No usernames, hostnames, process lists, or network details are collected.
-- [ ] Existing Phase 1 CLI tests still pass and the CLI remains a placeholder until Phase 3.
+- [x] Snapshot and metric model types are explicit, typed, and contain raw values rather than formatted strings.
+- [x] `collect_snapshot()` returns system, CPU, memory, storage, battery-if-reported, uptime, and capture time.
+- [x] Unsupported or missing battery data does not fail the snapshot or invent a value.
+- [x] A disk that cannot be queried does not prevent collecting other accessible disks; a warning explains the omission.
+- [x] Failures in required collectors are surfaced explicitly.
+- [x] CPU sampling uses a meaningful documented interval, not an invalid first non-blocking reading.
+- [x] Unit tests use mocks/fixed values and do not depend on actual host metrics.
+- [x] Tests cover normal values, missing optional values, inaccessible mounts, and required-call failures.
+- [x] No usernames, hostnames, process lists, or network details are collected.
+- [x] Existing Phase 1 CLI tests still pass and the CLI remains a placeholder until Phase 3.
 
 ## Deliverable and learning outcome
 
