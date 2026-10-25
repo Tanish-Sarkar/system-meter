@@ -2,7 +2,7 @@
 
 System Meter (`speakup`) is a planned, cross-platform command-line tool for getting a fast, trustworthy snapshot of a computer's health. It aims to help developers, IT/helpdesk teams, and operators quickly understand resource pressure and share useful diagnostics without opening a graphical system monitor.
 
-> **Status:** Early scaffold. Today, `speakup` only prints an initialization message; it does not collect metrics yet. The features below are goals, not implemented behavior.
+> **Status:** The Phase 1 CLI skeleton is implemented: help/version, argument validation, and routing for the planned commands work. System metrics, JSON output, quiet health checks, diagnostic reporting, and watch behavior are not implemented yet; those commands currently report that their feature is unavailable.
 
 ## Product direction
 
@@ -86,7 +86,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How command-line arguments, options, subcommands, help, and parse errors work.
 - **Read:** [Python's `argparse` tutorial](https://docs.python.org/3/howto/argparse.html), [the `argparse` reference](https://docs.python.org/3/library/argparse.html), and [Python Packaging: entry points](https://packaging.python.org/en/latest/specifications/entry-points/).
-- **What we will do:** Follow the [Phase 1 CLI plan](docs/phase-1-cli-plan.md) to settle the command contract, then replace the initialization-only stub with a parser for `speakup`, `--json`, `--quiet`, `doctor`, and `watch`. Keep parsing separate from metric collection and output.
+- **Status:** CLI skeleton implemented; see the [Phase 1 CLI plan](docs/phase-1-cli-plan.md) for its command contract and acceptance checklist.
 - **Deliverable:** All requested commands appear in `--help`, route to deliberate handlers, and have parser tests—even where a handler temporarily reports that its feature is not ready.
 - **What you will learn:** CLI design, argument parsing, separation of responsibilities, error handling, and how to test command behavior without depending on a real machine's metrics.
 

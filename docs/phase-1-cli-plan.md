@@ -2,6 +2,8 @@
 
 This document turns Phase 1 of the [project roadmap](../README.md#learning-first-development-plan) into an implementation-ready plan. It defines the first version of the `speakup` command interface without implementing system metric collection.
 
+**Status:** CLI skeleton implemented and tested. Snapshot data, JSON serialization, diagnostics, and watch behavior remain for later phases.
+
 ## Goal
 
 Replace the initialization-only entry point with a small, tested command-line interface for:
@@ -108,16 +110,16 @@ Do not split modules preemptively. Introduce a separate CLI module only if `main
 
 ## Acceptance checklist
 
-- [ ] `speakup --help` lists the default invocation and both subcommands.
-- [ ] `speakup --version` prints the package version.
-- [ ] The default invocation, `--json`, and `--quiet` route to the snapshot handler with the expected mode.
-- [ ] `doctor` and `watch` route to their own handlers.
-- [ ] `--json --quiet` is rejected with an argparse usage error.
-- [ ] Snapshot options on `doctor` or `watch` are rejected in this first version.
-- [ ] Unknown options and commands return exit status 2 and write an error to stderr.
-- [ ] Not-yet-implemented handlers say so explicitly and return exit status 1.
-- [ ] Tests cover parsing, routing, stdout/stderr, and exit statuses without accessing real system metrics.
-- [ ] The installed `speakup` entry point propagates the CLI's return status.
+- [x] `speakup --help` lists the default invocation and both subcommands.
+- [x] `speakup --version` prints the package version.
+- [x] The default invocation, `--json`, and `--quiet` route to explicit not-yet-implemented responses.
+- [x] `doctor` and `watch` route to their own handlers.
+- [x] `--json --quiet` is rejected with an argparse usage error.
+- [x] Snapshot options on `doctor` or `watch` are rejected in this first version.
+- [x] Unknown options and commands return exit status 2 and write an error to stderr.
+- [x] Not-yet-implemented handlers say so explicitly and return exit status 1.
+- [x] Tests cover parsing, routing, stdout/stderr, and exit statuses without accessing real system metrics.
+- [x] The installed `speakup` entry point resolves to the CLI and propagates its return status.
 
 ## Deliverable and learning outcome
 
