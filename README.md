@@ -130,8 +130,9 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How to handle repeated work, intervals, clean shutdown, and terminal refresh behavior without creating a graphical interface.
 - **Read:** [Python's `time` documentation](https://docs.python.org/3/library/time.html), [Python's signal handling documentation](https://docs.python.org/3/library/signal.html), and Rich's [live display documentation](https://rich.readthedocs.io/en/stable/live.html).
-- **What we will do:** Implement `speakup watch` by reusing the collectors and compact snapshot renderer. Refresh at a sensible interval, stop cleanly on user interruption, and avoid unnecessary CPU use. Keep it a terminal command, not a dashboard application.
-- **Deliverable:** A responsive, low-overhead watch mode with testable refresh/stop behavior and clear help text.
+- **Status:** Planned; behavior and test contract agreed. See the [Phase 6 watch and testing plan](docs/phase-6-watch-plan.md).
+- **What we will do:** Implement `speakup watch` with a configurable interval (default 2 seconds), a refreshed human-readable view in interactive terminals, and versioned JSON Lines output with `speakup --json watch`. Stop cleanly on Ctrl+C and avoid unnecessary CPU use. Keep it a terminal command, not a dashboard application.
+- **Deliverable:** A responsive watch mode with validated interval settings, testable refresh/error/stop behavior, automation-friendly JSON Lines, and clear help text.
 - **What you will learn:** Loops and timing, interruption handling, reusable components, and testing behavior that changes over time.
 
 ### Phase 7 — Verify, package, and prepare for real users
