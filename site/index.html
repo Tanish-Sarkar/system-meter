@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#F9EBD7">
+  <title>System Meter — Know your system from the terminal</title>
+  <meta name="description" content="A practical Python command-line tool for checking CPU, memory, storage, battery, and uptime on Windows, macOS, and Linux.">
+  <meta name="keywords" content="system monitor CLI, Python system monitor, terminal system information, CPU memory monitor, cross-platform CLI, psutil">
+  <meta name="author" content="Tanish Sarkar">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://tanish-sarkar.github.io/system-meter/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="System Meter — System snapshots in your terminal">
+  <meta property="og:description" content="Check CPU, memory, storage, battery, and uptime from a practical cross-platform command-line tool.">
+  <meta property="og:url" content="https://tanish-sarkar.github.io/system-meter/">
+  <meta property="og:site_name" content="System Meter">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="System Meter — System snapshots in your terminal">
+  <meta name="twitter:description" content="Check CPU, memory, storage, battery, and uptime from a practical cross-platform command-line tool.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23F9EBD7'/%3E%3Cpath d='M12 48V16h9l11 14 11-14h9v32H41V31L32 42 23 31v17z' fill='%23046A38'/%3E%3C/svg%3E">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "System Meter",
+    "alternateName": "speakup",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Windows, macOS, Linux",
+    "softwareRequirements": "Python 3.13 or newer",
+    "description": "A cross-platform command-line system snapshot tool for CPU, memory, storage, battery, and uptime.",
+    "url": "https://tanish-sarkar.github.io/system-meter/",
+    "codeRepository": "https://github.com/Tanish-Sarkar/system-meter"
+  }
+  </script>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #F9EBD7;
+      --paper-deep: #EAD9BD;
+      --ink: #101010;
+      --muted: #41483F;
+      --line: #171B16;
+      --green: #046A38;
+      --vermilion: #E34222;
+      --accent: var(--green);
+      --terminal: #14241B;
+      font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      font-synthesis: none;
+      text-rendering: optimizeLegibility;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+    body { margin: 0; color: var(--ink); background: var(--paper); line-height: 1.6; }
+    a { color: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { font: inherit; }
+    .wrap { width: min(1240px, calc(100% - 64px)); margin-inline: auto; }
+    .skip-link { position: absolute; left: 1rem; top: -4rem; z-index: 5; padding: .7rem 1rem; color: white; background: var(--ink); }
+    .skip-link:focus { top: 1rem; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; min-height: 78px; border-bottom: 3px solid var(--ink); }
+    .brand { display: inline-flex; align-items: center; gap: .65rem; text-decoration: none; font-weight: 800; letter-spacing: -.04em; }
+    .brand-mark { display: grid; width: 31px; height: 31px; place-items: center; color: var(--paper); background: var(--green); font-weight: 900; }
+    .nav { display: flex; align-items: center; gap: clamp(1rem, 3vw, 2.3rem); font-size: .86rem; }
+    .nav a { text-decoration: none; }
+    .nav a:hover, .text-link:hover { color: var(--accent); }
+    .nav .github-link { padding: .45rem .7rem; border: 2px solid var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+    .hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, .94fr); gap: clamp(2rem, 6vw, 5.5rem); align-items: center; padding-block: clamp(4rem, 10vw, 8rem); }
+    .eyebrow, .kicker { display: inline-block; padding: .12rem .35rem; color: var(--ink); background: var(--vermilion); text-transform: uppercase; letter-spacing: .12em; font-size: .72rem; font-weight: 900; }
+    h1 { max-width: 680px; margin: 1rem 0 1.15rem; font-size: clamp(3.1rem, 6.5vw, 6.3rem); line-height: .91; letter-spacing: -.075em; }
+    .gradient-text { color: var(--green); }
+    .hero-copy { max-width: 540px; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.15rem); }
+    .hero-copy strong { color: var(--ink); }
+    .actions { display: flex; flex-wrap: wrap; gap: .65rem; margin-top: 1.7rem; }
+    .button { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 46px; padding: .65rem .95rem; border: 2px solid var(--ink); text-decoration: none; font-size: .9rem; font-weight: 800; transition: transform .12s ease, box-shadow .12s ease; }
+    .button-primary { color: var(--paper); background: var(--green); box-shadow: 4px 4px 0 var(--ink); }
+    .button-primary:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+    .button-secondary { background: var(--paper); box-shadow: 4px 4px 0 var(--ink); }
+    .button-secondary:hover { transform: translate(2px, 2px); box-shadow: 2px 2px 0 var(--ink); }
+    .requirements { margin-top: 1rem; color: var(--muted); font-size: .8rem; }
+    .terminal { min-width: 0; overflow: hidden; border: 3px solid var(--ink); background: var(--terminal); color: var(--paper); box-shadow: 8px 8px 0 var(--green); }
+    .terminal-top { display: flex; align-items: center; gap: 7px; height: 39px; padding: 0 14px; border-bottom: 2px solid var(--paper); color: #d5cbb8; font-size: .72rem; }
+    .dot { width: 8px; height: 8px; background: var(--vermilion); }
+    .dot:nth-child(2) { background: #e5b64f; }
+    .dot:nth-child(3) { background: #69b878; }
+    .terminal-label { margin-left: auto; }
+    .terminal-body { overflow-x: auto; padding: clamp(.8rem, 2vw, 1.25rem); font: 500 clamp(.62rem, 1.05vw, .78rem)/1.85 ui-monospace, SFMono-Regular, Consolas, monospace; }
+    .term-title { color: #F09A78; font-weight: 800; }
+    .term-muted { color: #C5C0AF; }
+    .term-blue { color: #A8D0A7; }
+    .term-cyan { color: #78CBB4; }
+    .term-green { color: #A8D28B; }
+    .term-pink { color: #F08A6E; }
+    .term-yellow { color: #E9C56D; }
+    .term-row { display: grid; grid-template-columns: 105px minmax(0, 1fr); gap: .5rem; }
+    .terminal-section { width: max-content; min-width: 100%; margin-top: .7rem; padding: .25rem .55rem; border: 1px solid #738275; }
+    .terminal-section.memory { border-color: #67805D; }
+    .terminal-section.storage { border-color: #527A66; }
+    .section { padding-block: clamp(3.7rem, 8vw, 6.5rem); border-top: 3px solid var(--ink); }
+    .section-heading { max-width: 720px; margin-bottom: 2rem; }
+    h2 { margin: .35rem 0 .55rem; font-size: clamp(2rem, 4.5vw, 3.6rem); line-height: 1.02; letter-spacing: -.06em; }
+    .section-heading p, .muted { color: var(--muted); }
+    .feature-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 2px solid var(--ink); box-shadow: 6px 6px 0 var(--ink); }
+    .feature { min-width: 0; min-height: 175px; padding: 1.25rem 1.2rem 1.4rem; }
+    .feature + .feature { border-left: 2px solid var(--ink); }
+    .feature-icon { display: table; margin-bottom: 1.1rem; padding: .12rem .3rem; color: var(--ink); background: var(--vermilion); font: 700 .82rem ui-monospace, SFMono-Regular, Consolas, monospace; }
+    h3 { margin: 0 0 .4rem; font-size: 1.02rem; letter-spacing: -.02em; }
+    .feature p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .install-layout { display: grid; grid-template-columns: minmax(0, .72fr) minmax(0, 1.28fr); gap: clamp(2rem, 6vw, 5rem); align-items: start; }
+    .install-layout > * { min-width: 0; }
+    .install-aside { position: sticky; top: 1.5rem; }
+    .install-aside p, .install-aside ul { color: var(--muted); }
+    .install-aside ul { padding-left: 1.1rem; }
+    .install-aside li { padding-block: .15rem; }
+    .text-link { text-underline-offset: .2em; }
+    .install-card { min-width: 0; padding: clamp(1rem, 3vw, 1.8rem); border: 3px solid var(--ink); background: #FFF6E8; box-shadow: 7px 7px 0 var(--vermilion); }
+    .tabs { display: flex; border-bottom: 2px solid var(--ink); }
+    .tab { flex: 1; min-width: 0; padding: .7rem .5rem; color: var(--muted); border: 0; border-bottom: 3px solid transparent; background: transparent; cursor: pointer; font-weight: 700; font-size: .86rem; }
+    .tab[aria-selected="true"] { color: var(--green); border-bottom-color: var(--vermilion); }
+    .install-panel { padding-top: 1.2rem; }
+    .install-panel h3 { margin-top: 1.2rem; }
+    .install-panel h3:first-child { margin-top: 0; font-size: 1.2rem; }
+    .install-panel p { color: var(--muted); font-size: .92rem; }
+    .command { position: relative; min-width: 0; margin: 1rem 0; padding: .9rem 4rem .9rem .9rem; overflow-x: auto; border: 2px solid var(--ink); background: var(--terminal); color: var(--paper); font: .78rem/1.8 ui-monospace, SFMono-Regular, Consolas, monospace; white-space: pre; }
+    .command code { font: inherit; }
+    .copy-button { position: absolute; top: .5rem; right: .5rem; min-height: 32px; padding: .3rem .55rem; color: var(--paper); border: 1px solid var(--paper); background: var(--green); cursor: pointer; font-size: .72rem; }
+    .copy-button:hover { background: var(--vermilion); border-color: var(--vermilion); }
+    .note { margin-top: 1rem; padding: .8rem .9rem; border: 2px solid var(--ink); border-left: 8px solid var(--vermilion); background: var(--paper-deep); color: var(--ink); font-size: .85rem; }
+    .command-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 2px solid var(--ink); }
+    .command-card { min-width: 0; padding: 1rem; border-bottom: 2px solid var(--ink); }
+    .command-card:nth-child(2n) { border-left: 2px solid var(--ink); }
+    .command-card code { display: block; margin-bottom: .35rem; color: var(--green); font: 700 .86rem ui-monospace, SFMono-Regular, Consolas, monospace; overflow-wrap: anywhere; }
+    .command-card p { margin: 0; color: var(--muted); font-size: .86rem; }
+    .faq { border-top: 2px solid var(--ink); }
+    details { padding: 1rem 0; border-bottom: 2px solid var(--ink); }
+    summary { cursor: pointer; font-weight: 720; }
+    details p { max-width: 760px; margin-bottom: 0; color: var(--muted); font-size: .92rem; }
+    .cta { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: clamp(1.25rem, 4vw, 2.4rem); border: 3px solid var(--ink); border-left: 12px solid var(--vermilion); background: var(--green); color: var(--paper); box-shadow: 8px 8px 0 var(--ink); }
+    .cta h2 { margin: 0 0 .4rem; font-size: clamp(1.7rem, 3.5vw, 2.5rem); }
+    .cta p { margin: 0; color: var(--paper); }
+    .cta .button-primary { color: var(--ink); border-color: var(--paper); background: var(--paper); box-shadow: 4px 4px 0 var(--ink); }
+    .cta .button-secondary { color: var(--paper); border-color: var(--paper); background: transparent; box-shadow: 4px 4px 0 var(--ink); }
+    footer { padding: 1.5rem 0 2.2rem; border-top: 3px solid var(--ink); color: var(--muted); font-size: .83rem; }
+    .footer-row { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+    .footer-links { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .footer-links a { text-decoration: none; }
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; gap: 2.5rem; }
+      .terminal { max-width: 700px; }
+      .terminal-body { font-size: .78rem; }
+      .install-layout { grid-template-columns: 1fr; }
+      .install-aside { position: static; max-width: 700px; }
+    }
+    @media (max-width: 650px) {
+      .wrap { width: calc(100% - 36px); }
+      .topbar { min-height: 66px; }
+      .nav { gap: .85rem; font-size: .78rem; }
+      .nav a:first-child { display: none; }
+      .nav .github-link { padding: .35rem .45rem; }
+      .hero { padding-block: 3.5rem; }
+      .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .feature { min-height: 0; padding: 1rem .8rem 1.2rem; }
+      .feature:nth-child(3) { border-left: 0; }
+      .feature:nth-child(n+3) { border-top: 2px solid var(--ink); }
+      .feature:nth-child(2n) { border-left: 2px solid var(--ink); }
+      .cta { align-items: flex-start; flex-direction: column; }
+      .cta .actions { margin-top: .2rem; }
+    }
+    @media (max-width: 420px) {
+      .wrap { width: calc(100% - 28px); }
+      .brand { gap: .45rem; font-size: .9rem; }
+      .brand-mark { width: 28px; height: 28px; }
+      .nav { gap: .55rem; font-size: .73rem; }
+      .nav a:nth-child(3) { display: none; }
+      h1 { font-size: clamp(2.75rem, 14vw, 3.5rem); }
+      .terminal-body { padding: .65rem; font-size: .62rem; }
+      .term-row { grid-template-columns: 78px minmax(0, 1fr); }
+      .terminal-section { padding-inline: .35rem; }
+      .command { padding-right: 3.7rem; font-size: .7rem; }
+      .tab { font-size: .75rem; }
+      .command-grid { grid-template-columns: 1fr; }
+      .command-card, .command-card:nth-child(2n) { padding: .9rem 0; border-left: 0; }
+      .footer-row { flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header id="top" class="wrap topbar">
+    <a class="brand" href="#top" aria-label="System Meter home">
+      <span class="brand-mark" aria-hidden="true">S</span>
+      <span>System Meter</span>
+    </a>
+    <nav class="nav" aria-label="Main navigation">
+      <a href="#features">Features</a>
+      <a href="#install">Install</a>
+      <a href="#commands">Commands</a>
+      <a class="github-link" href="https://github.com/Tanish-Sarkar/system-meter" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="wrap hero" aria-labelledby="hero-title">
+      <div>
+        <span class="eyebrow">A small utility for working machines</span>
+        <h1 id="hero-title">See what your machine is <span class="gradient-text">using.</span></h1>
+        <p class="hero-copy"><strong>System Meter</strong> puts CPU, memory, storage, battery, and uptime in your terminal. Run a snapshot by hand, keep an eye on live readings, or use JSON in a script.</p>
+        <div class="actions">
+          <a class="button button-primary" href="#install">Install the CLI <span aria-hidden="true">↓</span></a>
+          <a class="button button-secondary" href="https://github.com/Tanish-Sarkar/system-meter" target="_blank" rel="noopener noreferrer">Read the source ↗</a>
+        </div>
+        <p class="requirements">Python 3.13+ <span aria-hidden="true">·</span> Windows <span aria-hidden="true">·</span> macOS <span aria-hidden="true">·</span> Linux</p>
+      </div>
+      <div class="terminal" aria-label="Illustrative System Meter terminal preview">
+        <div class="terminal-top"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="terminal-label">speakup</span></div>
+        <div class="terminal-body">
+          <div class="term-title">╔══ SYSTEM METER ═══════════════════════════╗</div>
+          <div class="term-muted">  Snapshot · local machine</div>
+          <div class="terminal-section">
+            <div class="term-blue">╭── CPU ─────────────────────────────────╮</div>
+            <div class="term-row"><span>Usage</span><span class="term-pink">18.4%</span></div>
+            <div class="term-row"><span>Logical</span><span>8 cores</span></div>
+            <div class="term-blue">╰────────────────────────────────────────╯</div>
+          </div>
+          <div class="terminal-section memory">
+            <div class="term-green">╭── MEMORY ──────────────────────────────╮</div>
+            <div class="term-row"><span>Used</span><span>6.0 GiB / 16.0 GiB <b class="term-green">(37.5%)</b></span></div>
+            <div class="term-row"><span>Available</span><span>10.0 GiB</span></div>
+            <div class="term-green">╰────────────────────────────────────────╯</div>
+          </div>
+          <div class="terminal-section storage">
+            <div class="term-cyan">╭── STORAGE ─────────────────────────────╮</div>
+            <div class="term-row"><span>C:\</span><span>40.0 GiB / 100.0 GiB</span></div>
+            <div class="term-cyan">╰────────────────────────────────────────╯</div>
+          </div>
+          <div class="term-yellow">  Battery · 73% · plugged in</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="features" class="section">
+      <div class="wrap">
+        <div class="section-heading">
+          <span class="kicker">Small tool. Useful signal.</span>
+          <h2>Made for the terminal you already use.</h2>
+          <p>Quick to run by hand, predictable enough for scripts, and transparent about what it can—and can’t—measure.</p>
+        </div>
+        <div class="feature-grid">
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">01 / DISPLAY</div>
+            <h3>Readable snapshots</h3>
+            <p>Framed readings, clear units, and layouts designed for terminal output.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">02 / JSON</div>
+            <h3>Automation-ready</h3>
+            <p>Versioned JSON snapshots, JSON Lines watch output, and useful exit statuses.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">03 / WATCH</div>
+            <h3>Live watch mode</h3>
+            <p>Refresh a live terminal view or stream JSON samples at a chosen interval.</p>
+          </article>
+          <article class="feature">
+            <div class="feature-icon" aria-hidden="true">04 / LOCAL</div>
+            <h3>Local by design</h3>
+            <p>No automatic telemetry or uploads. `doctor` reports collection limitations, not health scores.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="install" class="section">
+      <div class="wrap install-layout">
+        <div class="install-aside">
+          <span class="kicker">Get started</span>
+          <h2>One install.<br>One command.</h2>
+          <p>Choose pip inside a virtual environment, or install an isolated command with uv.</p>
+          <ul>
+            <li>Requires Python 3.13 or newer</li>
+            <li>Git is required for installing from the repository URL</li>
+            <li>Works on Windows, macOS, and Linux</li>
+            <li>The GitHub repository must be public for anonymous install</li>
+          </ul>
+          <a class="text-link" href="https://github.com/Tanish-Sarkar/system-meter" target="_blank" rel="noopener noreferrer">View project on GitHub ↗</a>
+        </div>
+        <div class="install-card">
+          <div class="tabs" role="tablist" aria-label="Choose an installation method">
+            <button class="tab" id="tab-pip" type="button" role="tab" aria-selected="true" aria-controls="panel-pip" tabindex="0">pip · virtual environment</button>
+            <button class="tab" id="tab-uv" type="button" role="tab" aria-selected="false" aria-controls="panel-uv" tabindex="-1">uv · user tool</button>
+          </div>
+          <div class="install-panel" id="panel-pip" role="tabpanel" aria-labelledby="tab-pip">
+            <h3>Install with pip</h3>
+            <p>Create a virtual environment, activate it, and install directly from GitHub.</p>
+            <h3>Windows · PowerShell</h3>
+            <div class="command"><code>py -3.13 -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
+speakup</code><button class="copy-button" type="button" aria-label="Copy Windows pip commands">Copy</button></div>
+            <h3>macOS · Linux</h3>
+            <div class="command"><code>python3.13 -m venv venv
+source venv/bin/activate
+python -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
+speakup</code><button class="copy-button" type="button" aria-label="Copy macOS and Linux pip commands">Copy</button></div>
+            <div class="note">Keep the virtual environment active to use <code>speakup</code>. To upgrade later, repeat the pip install command with <code>--upgrade</code>.</div>
+          </div>
+          <div class="install-panel" id="panel-uv" role="tabpanel" aria-labelledby="tab-uv" hidden>
+            <h3>Install as a uv tool</h3>
+            <p>uv installs the app in an isolated environment and exposes its command without activating a project environment.</p>
+            <div class="command"><code>uv tool install git+https://github.com/Tanish-Sarkar/system-meter.git
+speakup</code><button class="copy-button" type="button" aria-label="Copy uv installation commands">Copy</button></div>
+            <p>If your shell cannot find <code>speakup</code>, add uv's tool executable directory to your <code>PATH</code> using <code>uv tool update-shell</code>, then restart the terminal.</p>
+            <a class="text-link" href="https://docs.astral.sh/uv/guides/tools/" target="_blank" rel="noopener noreferrer">Learn about uv tools ↗</a>
+          </div>
+          <p id="copy-status" class="muted" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+    </section>
+
+    <section id="commands" class="section">
+      <div class="wrap">
+        <div class="section-heading">
+          <span class="kicker">Everyday usage</span>
+          <h2>From quick check to live stream.</h2>
+          <p>Run these after installing and activating your pip environment, or after installing with uv.</p>
+        </div>
+        <div class="command-grid">
+          <article class="command-card"><code>speakup</code><p>Show one colorful, human-readable system snapshot.</p></article>
+          <article class="command-card"><code>speakup --json</code><p>Print one versioned JSON snapshot for scripts and integrations.</p></article>
+          <article class="command-card"><code>speakup --quiet</code><p>Check collection silently; the exit status indicates success, not system health.</p></article>
+          <article class="command-card"><code>speakup doctor</code><p>Show collected information and limitations in a local report.</p></article>
+          <article class="command-card"><code>speakup watch</code><p>Refresh the human-readable view in an interactive terminal. Stop with Ctrl+C.</p></article>
+          <article class="command-card"><code>speakup watch --interval 5</code><p>Set watch refresh to 5 seconds (minimum 1 second; default 2 seconds).</p></article>
+          <article class="command-card"><code>speakup --json watch</code><p>Stream one JSON object per line. Redirect or pipe this output as needed.</p></article>
+          <article class="command-card"><code>speakup --help</code><p>See available commands and options.</p></article>
+        </div>
+        <div class="note">Human-readable watch mode needs an interactive terminal. Use <code>speakup --json watch</code> for pipelines and redirected output.</div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-heading">
+          <span class="kicker">Good to know</span>
+          <h2>Clear answers before you install.</h2>
+        </div>
+        <div class="faq">
+          <details>
+            <summary>Why does development use <code>uv run speakup</code>?</summary>
+            <p>It runs the command with the repository's uv-managed Python environment and dependencies. The command is not installed globally. Use a pip virtual environment or <code>uv tool install</code> if you want to type <code>speakup</code> directly in a new terminal.</p>
+          </details>
+          <details>
+            <summary>Is System Meter a health or diagnostic score?</summary>
+            <p>No. It reports metrics and collection limitations. It does not judge whether a system is healthy or apply universal thresholds.</p>
+          </details>
+          <details>
+            <summary>Does every metric work on every computer?</summary>
+            <p>No. Some details depend on the operating system and hardware. Optional values may be absent, and the tool reports collection warnings where available.</p>
+          </details>
+          <details>
+            <summary>Does it send my system information anywhere?</summary>
+            <p>No automatic telemetry or upload is built in. Review report contents before sharing them; filesystem mount points can reveal local details.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap section" aria-label="Project links">
+      <div class="cta">
+        <div>
+          <h2>Ready to check your system?</h2>
+          <p>Install the CLI, explore the source, or help improve the project.</p>
+        </div>
+        <div class="actions">
+          <a class="button button-primary" href="#install">Get started</a>
+          <a class="button button-secondary" href="https://github.com/Tanish-Sarkar/system-meter" target="_blank" rel="noopener noreferrer">GitHub repository ↗</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap footer-row">
+      <span>© <span id="year">2026</span> System Meter · Built for the terminal.</span>
+      <div class="footer-links">
+        <a href="https://github.com/Tanish-Sarkar/system-meter" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/Tanish-Sarkar/system-meter/blob/main/README.md" target="_blank" rel="noopener noreferrer">Documentation</a>
+        <a href="https://github.com/Tanish-Sarkar/system-meter/issues" target="_blank" rel="noopener noreferrer">Issues</a>
+      </div>
+    </div>
+  </footer>
+  <script>
+    (() => {
+      const tabs = [...document.querySelectorAll('[role="tab"]')];
+      const panels = [...document.querySelectorAll('[role="tabpanel"]')];
+      const status = document.querySelector("#copy-status");
+
+      function activateTab(tab, moveFocus = false) {
+        tabs.forEach((item) => {
+          const selected = item === tab;
+          item.setAttribute("aria-selected", String(selected));
+          item.tabIndex = selected ? 0 : -1;
+        });
+        panels.forEach((panel) => {
+          panel.hidden = panel.id !== tab.getAttribute("aria-controls");
+        });
+        if (moveFocus) tab.focus();
+      }
+
+      tabs.forEach((tab, index) => {
+        tab.addEventListener("click", () => activateTab(tab));
+        tab.addEventListener("keydown", (event) => {
+          let nextIndex = index;
+          if (event.key === "ArrowRight") nextIndex = (index + 1) % tabs.length;
+          if (event.key === "ArrowLeft") nextIndex = (index + tabs.length - 1) % tabs.length;
+          if (nextIndex !== index) {
+            event.preventDefault();
+            activateTab(tabs[nextIndex], true);
+          }
+        });
+      });
+
+      document.querySelectorAll(".copy-button").forEach((button) => {
+        button.addEventListener("click", async () => {
+          const code = button.closest(".command").querySelector("code").textContent;
+          try {
+            await navigator.clipboard.writeText(code);
+            status.textContent = "Commands copied to clipboard.";
+          } catch {
+            status.textContent = "Clipboard access is unavailable. Select and copy the commands manually.";
+          }
+        });
+      });
+
+      document.querySelector("#year").textContent = String(new Date().getFullYear());
+    })();
+  </script>
+</body>
+</html>

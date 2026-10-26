@@ -45,7 +45,9 @@ Example values are illustrative; available metrics depend on the host.
 
 ## Install
 
-System Meter requires **Python 3.13 or newer**. Choose one installation method.
+System Meter requires **Python 3.13 or newer**. Install Git if you use the GitHub repository URL. Choose one installation method.
+
+Project website and installation guide: [System Meter on GitHub Pages](https://tanish-sarkar.github.io/system-meter/).
 
 ### Install from this GitHub repository with pip
 
@@ -114,6 +116,18 @@ uv run speakup
 Press **Ctrl+C** to stop `watch`; it exits with status 130. Human-readable watch mode requires an interactive terminal; use `--json` when piping or redirecting output. `--quiet` is not a watch option.
 
 `--json` has a versioned schema. See the [JSON contract](docs/phase-4-json-and-quiet-plan.md#proposed-json-contract) and [watch/JSON Lines contract](docs/phase-6-watch-plan.md).
+
+## Host the website with GitHub Pages
+
+The single-page site is in [`site/index.html`](site/index.html); its CSS and JavaScript are included in that file. The folder also contains SEO crawler files. A GitHub Actions workflow in `.github/workflows/pages.yml` publishes the `site/` folder.
+
+1. Push this repository to GitHub. For an openly accessible website and anonymous tool installation, set the repository visibility to **Public** in **Settings → General → Danger Zone → Change visibility**.
+2. Open **Settings → Pages**.
+3. Under **Build and deployment → Source**, select **GitHub Actions**.
+4. Push a change to `site/` on the `main` branch, or manually run **Actions → Deploy GitHub Pages → Run workflow**.
+5. Wait for the workflow to finish successfully. The project site will be at **https://tanish-sarkar.github.io/system-meter/**.
+
+Subsequent changes under `site/` deploy automatically when pushed to `main`. GitHub may take a few minutes to make the first deployment available.
 
 ## Develop and test
 
@@ -218,9 +232,10 @@ Only after the core commands are dependable, investigate GPU, NPU, temperature, 
 
 ```text
 .github/
-  workflows/       Cross-platform CI and manually gated TestPyPI release candidate
+  workflows/       CI, TestPyPI, and GitHub Pages deployment
 docs/              Phase-by-phase learning and implementation plans
 scripts/           Installed-package smoke test used by CI
+site/              Single-page GitHub Pages website
 src/speakup/       CLI, collectors, renderers, and serialization
 tests/             Automated unittest suite
 MANIFEST.in        Source distribution contents

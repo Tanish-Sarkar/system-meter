@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tanish-sarkar.github.io/system-meter/sitemap.xml
