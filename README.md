@@ -64,6 +64,7 @@ The options and subcommands have consistent help text and clear errors. The [Pha
 ## What makes it feel polished
 
 - Fast startup and a compact layout that works in narrow terminals.
+- Color-coded, framed metric sections that adapt to terminal width.
 - Clear units, consistent rounding, and understandable health labels.
 - Subtle terminal styling that remains readable without color.
 - Helpful explanations for warnings and unavailable hardware metrics.
@@ -168,14 +169,48 @@ uv sync
 uv run speakup
 ```
 
-To install the command as a global uv tool after the repository is published:
+`uv run speakup` runs the installed project command inside this repository's `.venv` without requiring a global installation. It makes sure the project's dependencies and Python environment are used. A bare `speakup` command works only when the package is installed in the active environment or its executable directory is on `PATH`.
 
-```bash
-uv tool install git+https://github.com/<OWNER>/<REPOSITORY>.git
+### Install with pip in a virtual environment
+
+This installs System Meter and its `speakup` command into a dedicated Python environment. Run from the repository root.
+
+Windows PowerShell:
+
+```powershell
+py -3.13 -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install .
 speakup
 ```
 
-Replace `<OWNER>` and `<REPOSITORY>` with the actual GitHub owner and repository name.
+If PowerShell blocks environment activation, you can run the executable directly:
+
+```powershell
+.\venv\Scripts\speakup.exe
+```
+
+macOS or Linux:
+
+```bash
+python3.13 -m venv venv
+source venv/bin/activate
+python -m pip install .
+speakup
+```
+
+The `speakup` command is available while that virtual environment is activated. The separate `venv` directory avoids replacing the `.venv` that `uv sync` creates and avoids modifying the operating system's managed Python installation.
+
+### Install as a user-level command with uv
+
+From the repository root, install the project as an isolated uv tool:
+
+```bash
+uv tool install .
+speakup
+```
+
+This makes `speakup` available without activating the project's development environment, provided uv's tool executable directory is on `PATH`. After publishing the project, it can also be installed from its package index or Git repository.
 
 ## Repository layout
 

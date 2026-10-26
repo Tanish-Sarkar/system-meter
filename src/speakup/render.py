@@ -4,6 +4,7 @@ from datetime import UTC
 
 from rich import box
 from rich.console import Console, Group, RenderableType
+from rich.panel import Panel
 from rich.table import Table
 from rich.text import Text
 
@@ -13,6 +14,32 @@ from speakup.models import SystemSnapshot
 
 def _optional(value: str | None) -> str:
     return value if value else "not available"
+
+
+def _panel(title: str, renderable: RenderableType, color: str) -> Panel:
+    return Panel(
+        renderable,
+        title=Text(title, style=f"bold {color}"),
+        border_style=color,
+        box=box.ROUNDED,
+        padding=(0, 1),
+        expand=True,
+    )
+
+
+def _report_header(title: str, captured_at: str, subtitle: str | None = None) -> Panel:
+    header = Text()
+    header.append(title, style="bold bright_cyan")
+    header.append(f"\nCaptured: {captured_at}", style="dim")
+    if subtitle is not None:
+        header.append(f"\n{subtitle}", style="italic yellow")
+    return Panel(
+        header,
+        box=box.DOUBLE,
+        border_style="bright_cyan",
+        padding=(0, 2),
+        expand=True,
+    )
 
 
 def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) -> None:
@@ -29,8 +56,10 @@ def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) ->
 
 
 def snapshot_renderable(snapshot: SystemSnapshot, width: int) -> RenderableType:
-    renderables: list[RenderableType] = [Text("System Meter", style="bold cyan")]
     captured_at = snapshot.captured_at.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
+    renderables: list[RenderableType] = [
+        _report_header("System Meter", captured_at, "Live system snapshot")
+    ]
 
     system_table = Table(
         box=box.SIMPLE,
@@ -48,7 +77,7 @@ def snapshot_renderable(snapshot: SystemSnapshot, width: int) -> RenderableType:
     system_table.add_row("Architecture", _optional(snapshot.system.architecture))
     system_table.add_row("Uptime", format_uptime(snapshot.uptime_seconds))
     system_table.add_row("Captured", captured_at)
-    renderables.extend((Text("System", style="bold"), system_table))
+    renderables.append(_panel("System", system_table, "cyan"))
 
     cpu_table = Table(box=box.SIMPLE, show_header=False, padding=(0, 1))
     cpu_table.add_column("Property", style="bold")
@@ -61,7 +90,7 @@ def snapshot_renderable(snapshot: SystemSnapshot, width: int) -> RenderableType:
         if snapshot.cpu.physical_cores is not None
         else "not available",
     )
-    renderables.extend((Text("CPU", style="bold"), cpu_table))
+    renderables.append(_panel("CPU", cpu_table, "magenta"))
 
     memory_table = Table(box=box.SIMPLE, show_header=False, padding=(0, 1))
     memory_table.add_column("Property", style="bold")
@@ -76,22 +105,28 @@ def snapshot_renderable(snapshot: SystemSnapshot, width: int) -> RenderableType:
         "Available",
         format_bytes(snapshot.memory.available_bytes),
     )
-    renderables.extend((Text("Memory", style="bold"), memory_table))
+    renderables.append(_panel("Memory", memory_table, "green"))
 
-    renderables.append(Text("Storage", style="bold"))
-    if snapshot.disks:
-        if width < 80:
+    storage_renderables: list[RenderableType] = []
+    if width < 80:
+        storage_renderables.append(Text("Storage", style="bold blue"))
+        if snapshot.disks:
             for disk in snapshot.disks:
-                renderables.append(
+                storage_renderables.append(
                     Text(
                         f"{disk.mount_point}: "
                         f"{format_bytes(disk.used_bytes)} used / "
                         f"{format_bytes(disk.total_bytes)} total, "
                         f"{format_bytes(disk.free_bytes)} free "
-                        f"({format_percentage(disk.utilization_percent)} used)"
+                        f"({format_percentage(disk.utilization_percent)} used)",
+                        no_wrap=True,
                     )
                 )
         else:
+            storage_renderables.append(Text("No storage information available."))
+        renderables.extend(storage_renderables)
+    else:
+        if snapshot.disks:
             disk_table = Table(
                 box=box.SIMPLE,
                 padding=(0, 1),
@@ -110,9 +145,10 @@ def snapshot_renderable(snapshot: SystemSnapshot, width: int) -> RenderableType:
                     format_bytes(disk.free_bytes),
                     format_percentage(disk.utilization_percent),
                 )
-            renderables.append(disk_table)
-    else:
-        renderables.append(Text("No storage information available."))
+            storage_renderables.append(disk_table)
+        else:
+            storage_renderables.append(Text("No storage information available."))
+        renderables.append(_panel("Storage", Group(*storage_renderables), "blue"))
 
     if snapshot.battery is not None:
         battery = snapshot.battery
@@ -123,20 +159,15 @@ def snapshot_renderable(snapshot: SystemSnapshot, width: int) -> RenderableType:
         else:
             power_state = "power state not available"
 
-        renderables.extend(
-            (
-                Text("Battery", style="bold"),
-                Text(
-                    f"Charge: {format_percentage(battery.percent)} "
-                    f"({power_state})"
-                ),
-            )
+        battery_renderable = Text(
+            f"Charge: {format_percentage(battery.percent)} "
+            f"({power_state})"
         )
+        renderables.append(_panel("Battery", battery_renderable, "yellow"))
 
     if snapshot.warnings:
-        renderables.append(Text("Notes", style="bold"))
-        for warning in snapshot.warnings:
-            renderables.append(Text(f"- {warning}"))
+        notes = Group(*(Text(f"- {warning}") for warning in snapshot.warnings))
+        renderables.append(_panel("Notes", notes, "yellow"))
 
     return Group(*renderables)
 
@@ -155,9 +186,13 @@ def render_doctor_report(
         )
 
     captured_at = snapshot.captured_at.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
-    console.print(Text("System Meter Doctor", style="bold cyan"))
-    console.print(Text(f"Captured: {captured_at}"))
-    console.print(Text("Metric availability is not a health assessment."))
+    console.print(
+        _report_header(
+            "System Meter Doctor",
+            captured_at,
+            "Metric availability is not a health assessment.",
+        )
+    )
 
     system_table = Table(
         box=box.SIMPLE,
@@ -174,8 +209,7 @@ def render_doctor_report(
     )
     system_table.add_row("Architecture", _optional(snapshot.system.architecture))
     system_table.add_row("Uptime", format_uptime(snapshot.uptime_seconds))
-    console.print(Text("System information", style="bold"))
-    console.print(system_table)
+    console.print(_panel("System information", system_table, "cyan"))
 
     cpu_table = Table(box=box.SIMPLE, show_header=False, padding=(0, 1))
     cpu_table.add_column("Property", style="bold")
@@ -188,8 +222,7 @@ def render_doctor_report(
         if snapshot.cpu.physical_cores is not None
         else "not available",
     )
-    console.print(Text("CPU", style="bold"))
-    console.print(cpu_table)
+    console.print(_panel("CPU", cpu_table, "magenta"))
 
     memory_table = Table(box=box.SIMPLE, show_header=False, padding=(0, 1))
     memory_table.add_column("Property", style="bold")
@@ -204,23 +237,23 @@ def render_doctor_report(
         "Memory available",
         format_bytes(snapshot.memory.available_bytes),
     )
-    console.print(Text("Memory", style="bold"))
-    console.print(memory_table)
+    console.print(_panel("Memory", memory_table, "green"))
 
-    console.print(Text("Storage", style="bold"))
     if snapshot.disks:
         if console.width < 80:
+            storage_lines = []
             for disk in snapshot.disks:
-                console.print(
+                storage_lines.append(
                     Text(
                         f"{disk.mount_point}: "
                         f"{format_bytes(disk.used_bytes)} used / "
                         f"{format_bytes(disk.total_bytes)} total, "
                         f"{format_bytes(disk.free_bytes)} free "
-                        f"({format_percentage(disk.utilization_percent)} used)"
-                    ),
-                    soft_wrap=True,
+                        f"({format_percentage(disk.utilization_percent)} used)",
+                        no_wrap=True,
+                    )
                 )
+            storage_renderable: RenderableType = Group(*storage_lines)
         else:
             disk_table = Table(
                 box=box.SIMPLE,
@@ -240,9 +273,10 @@ def render_doctor_report(
                     format_bytes(disk.free_bytes),
                     format_percentage(disk.utilization_percent),
                 )
-            console.print(disk_table)
+            storage_renderable = disk_table
     else:
-        console.print("No storage information available.")
+        storage_renderable = Text("No storage information available.")
+    console.print(_panel("Storage", storage_renderable, "blue"))
 
     if snapshot.battery is not None:
         battery = snapshot.battery
@@ -253,17 +287,19 @@ def render_doctor_report(
         else:
             power_state = "power state not available"
 
-        console.print(Text("Battery", style="bold"))
         console.print(
-            Text(
+            _panel(
+                "Battery",
+                Text(
                 f"Charge: {format_percentage(battery.percent)} "
-                f"({power_state})"
+                    f"({power_state})"
+                ),
+                "yellow",
             )
         )
 
-    console.print(Text("Availability and limitations", style="bold"))
     if snapshot.warnings:
-        for warning in snapshot.warnings:
-            console.print(Text(f"- {warning}"))
+        limitations = Group(*(Text(f"- {warning}") for warning in snapshot.warnings))
     else:
-        console.print(Text("No collection limitations were reported."))
+        limitations = Text("No collection limitations were reported.")
+    console.print(_panel("Availability and limitations", limitations, "yellow"))

@@ -182,6 +182,29 @@ class RenderTests(unittest.TestCase):
 
         self.assertIsNone(re.search(r"\x1b\[[0-?]*[ -/]*[@-~]", output))
 
+    def test_report_uses_framed_sections(self):
+        output = render_to_string(make_snapshot())
+
+        self.assertIn("╔", output)
+        self.assertIn("┌", output)
+        self.assertIn("System", output)
+        self.assertIn("Storage", output)
+
+    def test_report_uses_color_when_terminal_supports_it(self):
+        output = StringIO()
+        console = Console(
+            file=output,
+            width=100,
+            force_terminal=True,
+            color_system="standard",
+            markup=False,
+            highlight=False,
+        )
+
+        render_snapshot(make_snapshot(), console)
+
+        self.assertRegex(output.getvalue(), r"\x1b\[[0-9;]*m")
+
     def test_default_renderer_respects_no_color_environment(self):
         output = StringIO()
         with (
