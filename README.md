@@ -1,76 +1,139 @@
 # System Meter
 
-System Meter (`speakup`) is a cross-platform command-line tool for getting a fast snapshot of a computer's system information. It aims to help developers, IT/helpdesk teams, and operators quickly inspect resource usage without opening a graphical system monitor.
+<p align="center">
+  <strong>A colorful, cross-platform system snapshot for your terminal.</strong><br>
+  CPU, memory, storage, battery, and uptime—without opening a dashboard.
+</p>
 
-> **Status:** The default `speakup` command displays a human-readable snapshot. `speakup --json` emits versioned JSON, `speakup --quiet` silently checks whether snapshot collection succeeds, `speakup doctor` prints a local diagnostic summary, and `speakup watch` refreshes snapshots in the terminal or streams JSON Lines.
+<p align="center">
+  <a href="https://github.com/Tanish-Sarkar/system-meter/actions/workflows/ci.yml"><img src="https://github.com/Tanish-Sarkar/system-meter/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+  <img src="https://img.shields.io/badge/python-3.13%2B-3776AB?logo=python&logoColor=white" alt="Python 3.13+">
+  <img src="https://img.shields.io/badge/interface-CLI-6E56CF" alt="CLI">
+</p>
 
-## Product direction
+**System Meter** is a Python CLI for developers, IT teams, operators, and anyone who wants a quick view of what their computer is doing. Run `speakup` for a framed, color-coded snapshot, use JSON in scripts, or watch metrics refresh live.
 
-System Meter is **CLI-only** and snapshot-oriented. The default command should be quick to run and easy to read in a terminal. It will not become a graphical app or a live dashboard.
+> **Project status:** The CLI and its core commands are implemented. Automated cross-platform CI and TestPyPI release setup are in progress; see the [Phase 7 plan](docs/phase-7-release-readiness-plan.md). Metrics may vary by OS and hardware. This tool reports measurements, not a diagnosis or health score.
 
-The project should be useful to:
+## Highlights
 
-- **Developers** investigating slow builds, tests, or local services.
-- **IT and helpdesk teams** collecting consistent workstation troubleshooting details.
-- **Operators and SREs** taking a quick host snapshot during incident response.
-- **Everyday terminal users** who want a clear system overview without a separate system monitor.
+- **Readable at a glance:** Color-coded frames, clear units, and a layout that adapts to terminal width.
+- **Useful in scripts:** Versioned JSON snapshots, JSON Lines watch output, and predictable exit codes.
+- **Easy to troubleshoot:** `doctor` summarizes collected information and limitations locally.
+- **No dashboard or telemetry:** Terminal-only, read-only collection; no automatic uploads.
+- **Portable by design:** Python 3.13+ and psutil, with optional metrics shown only when available.
 
-## What it should do
+## Preview
 
-### A useful default snapshot
+```text
+╔══════════════════════════════════════════════════════════════╗
+║  System Meter                                               ║
+║  Captured: 2026-01-02 03:04:05 UTC                          ║
+╚══════════════════════════════════════════════════════════════╝
+╭──────────────────────────── CPU ────────────────────────────╮
+│ Usage          18.4%                                         │
+│ Logical cores  8                                             │
+│ Physical cores 4                                             │
+╰─────────────────────────────────────────────────────────────╯
+╭────────────────────────── MEMORY ───────────────────────────╮
+│ Used       6.0 GiB / 16.0 GiB (37.5%)                        │
+│ Available  10.0 GiB                                          │
+╰─────────────────────────────────────────────────────────────╯
+```
 
-Show concise, labeled metrics with clear units and a simple overall health summary:
+Example values are illustrative; available metrics depend on the host.
 
-- CPU activity and basic processor/system details.
-- Memory usage and capacity.
-- Available storage on drives or mounted filesystems.
-- Battery level and charging state when the device exposes them.
-- Uptime and other useful, portable system details.
-- GPU or NPU information only where it can be reported reliably without compromising core portability.
+## Install
 
-Unavailable metrics should be explained plainly rather than shown as empty values or errors. The core command should work without administrator privileges wherever possible.
+System Meter requires **Python 3.13 or newer**. Choose one installation method.
 
-### Useful to people and automation
+### Install from this GitHub repository with pip
 
-- Human-readable terminal output by default, with restrained color and clear status indicators.
-- A `--json` option with a versioned schema for scripts and integrations.
-- A `--quiet` option that silently checks collection success and communicates failures through its exit status; it does not judge system health.
-- Predictable exit codes, a no-color mode, and sensible behavior in pipes and CI logs.
-- Thresholds that can eventually be configured to match a team's environment rather than imposing universal assumptions.
+The repository must be public for anonymous GitHub installation. Create and activate a virtual environment, then install the package directly from the repository.
 
-### Practical troubleshooting
+**Windows PowerShell**
 
-`speakup doctor` prints a local, reviewable diagnostic summary that is easy to inspect or intentionally redirect to a support file. It explains what information is included, avoids personal data, and never uploads or transmits diagnostics automatically.
+```powershell
+py -3.13 -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
+speakup
+```
 
-### The `watch` command
+If activation is blocked, invoke it directly as `.\venv\Scripts\speakup.exe`.
 
-`speakup watch` periodically refreshes the same compact snapshot in an interactive terminal so a user can observe changing values. Use `--interval SECONDS` to choose a refresh interval (minimum 1 second, default 2); use `--json` before `watch` for one versioned JSON object per line in pipes and logs. It remains a terminal command—not a separate graphical app or a full-screen dashboard—and Ctrl+C stops it.
+**macOS / Linux**
 
-## Command interface
+```bash
+python3.13 -m venv venv
+source venv/bin/activate
+python -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
+speakup
+```
 
-These commands describe the current CLI behavior:
+The `speakup` executable is available while the environment is active. To upgrade later:
 
-| Command | Intended purpose |
+```bash
+python -m pip install --upgrade git+https://github.com/Tanish-Sarkar/system-meter.git
+```
+
+### Install as a user-level tool with uv
+
+```bash
+uv tool install git+https://github.com/Tanish-Sarkar/system-meter.git
+speakup
+```
+
+This installs the command in an isolated environment managed by uv. If the shell cannot find `speakup`, ensure uv's tool executable directory is on your `PATH` (see `uv tool update-shell`).
+
+### Run from a local checkout (development)
+
+```bash
+git clone https://github.com/Tanish-Sarkar/system-meter.git
+cd system-meter
+uv sync
+uv run speakup
+```
+
+`uv run speakup` uses the project's `.venv` and dependencies. It is intended for development and does not install the command globally. A bare `speakup` works after installing the package in an active environment or as a uv tool.
+
+## Commands
+
+| Command | What it does |
 | --- | --- |
-| `speakup` | Print one concise, human-readable system snapshot. |
-| `speakup --json` | **Implemented:** Print one snapshot as versioned JSON. See the [JSON schema plan](docs/phase-4-json-and-quiet-plan.md#proposed-json-contract). |
-| `speakup --quiet` | **Implemented:** Silently check collection success; no health thresholds are applied. |
-| `speakup doctor` | **Implemented:** Print a local diagnostic summary of collected metrics and limitations. The report is not a health assessment. |
-| `speakup watch [--interval SECONDS]` | **Implemented:** Refresh the human-readable snapshot in place in a terminal. Ctrl+C exits with status 130; redirected output requires JSON mode. |
-| `speakup --json watch [--interval SECONDS]` | **Implemented:** Emit one schema-versioned JSON object per successful sample, one object per line. |
+| `speakup` | Collect and display one human-readable system snapshot. |
+| `speakup --json` | Print one versioned JSON snapshot to stdout. |
+| `speakup --quiet` | Collect a snapshot silently; exit status indicates collection success, not machine health. |
+| `speakup doctor` | Print a local diagnostic report with collected metrics and limitations. |
+| `speakup watch` | Refresh the human-readable snapshot in an interactive terminal. |
+| `speakup watch --interval 5` | Refresh every 5 seconds; the interval must be at least 1 second (default: 2). |
+| `speakup --json watch` | Stream one JSON object per line (JSON Lines), suitable for pipes and logs. |
+| `speakup --help` | Show available commands and options. |
+| `speakup --version` | Show the installed version. |
 
-The options and subcommands have consistent help text and clear errors. The [Phase 4 plan](docs/phase-4-json-and-quiet-plan.md) documents JSON compatibility and quiet-mode exit behavior; the [Phase 6 plan](docs/phase-6-watch-plan.md) documents the watch loop and JSON Lines contract.
+Press **Ctrl+C** to stop `watch`; it exits with status 130. Human-readable watch mode requires an interactive terminal; use `--json` when piping or redirecting output. `--quiet` is not a watch option.
 
-## What makes it feel polished
+`--json` has a versioned schema. See the [JSON contract](docs/phase-4-json-and-quiet-plan.md#proposed-json-contract) and [watch/JSON Lines contract](docs/phase-6-watch-plan.md).
 
-- Fast startup and a compact layout that works in narrow terminals.
-- Color-coded, framed metric sections that adapt to terminal width.
-- Clear units, consistent rounding, and understandable health labels.
-- Subtle terminal styling that remains readable without color.
-- Helpful explanations for warnings and unavailable hardware metrics.
-- Output that remains useful when copied into an issue, support ticket, or CI log.
+## Develop and test
 
-“Cool” should mean polished, fast, and dependable—not noisy or distracting.
+Install [uv](https://docs.astral.sh/uv/) and Python 3.13+, then from the repository root:
+
+```bash
+uv sync --locked
+uv run python -m unittest discover -s tests -v
+uv build
+```
+
+CI is configured for Python 3.13 on Windows, macOS, and Linux, plus the newest stable Python on Ubuntu. Check the [Actions tab](https://github.com/Tanish-Sarkar/system-meter/actions) for hosted results. Cross-platform behavior still depends on successful runs and real OS/hardware testing.
+
+## Privacy and limitations
+
+- Metrics are collected locally; the program does not automatically transmit them.
+- `doctor` is informational and does not make health judgments.
+- `--quiet` means required snapshot collection succeeded; it does not mean the computer is healthy.
+- Battery, storage, CPU, and other details can differ or be unavailable across platforms.
+- Avoid sharing diagnostic output without reviewing it first. Storage mount points may reveal local filesystem names.
 
 ## Learning-first development plan
 
@@ -80,6 +143,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How Python environments, project metadata, and dependency locking fit together.
 - **Read:** [uv projects](https://docs.astral.sh/uv/guides/projects/), [Python Packaging User Guide: `pyproject.toml`](https://packaging.python.org/en/latest/guides/writing-pyproject-toml/), and [Python's `unittest` documentation](https://docs.python.org/3/library/unittest.html).
+- **Status:** Complete.
 - **What we will do:** Use Python 3.13 and uv consistently; understand the `src/` layout, installed command entry point, lockfile, and existing smoke test.
 - **Deliverable:** A reproducible local setup using `uv sync`, with tests runnable using `uv run python -m unittest discover -s tests`.
 - **What you will learn:** Environments, dependencies, lockfiles, package layout, command entry points, and the purpose of automated tests.
@@ -88,8 +152,8 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How command-line arguments, options, subcommands, help, and parse errors work.
 - **Read:** [Python's `argparse` tutorial](https://docs.python.org/3/howto/argparse.html), [the `argparse` reference](https://docs.python.org/3/library/argparse.html), and [Python Packaging: entry points](https://packaging.python.org/en/latest/specifications/entry-points/).
-- **Status:** CLI skeleton implemented; see the [Phase 1 CLI plan](docs/phase-1-cli-plan.md) for its command contract and acceptance checklist.
-- **Deliverable:** All requested commands appear in `--help`, route to deliberate handlers, and have parser tests—even where a handler temporarily reports that its feature is not ready.
+- **Status:** Implemented and tested; see the [Phase 1 CLI plan](docs/phase-1-cli-plan.md) for its command contract and acceptance checklist.
+- **Deliverable:** All commands appear in `--help`, route to deliberate handlers, and have parser and behavior tests.
 - **What you will learn:** CLI design, argument parsing, separation of responsibilities, error handling, and how to test command behavior without depending on a real machine's metrics.
 
 ### Phase 2 — Collect reliable system information
@@ -106,7 +170,7 @@ Work through these phases in order. For each phase, study the linked material **
 - **Before implementing — learn:** How to format values consistently and how terminal output should behave in interactive terminals and pipes.
 - **Read:** [Rich documentation](https://rich.readthedocs.io/en/stable/), especially [console output](https://rich.readthedocs.io/en/stable/console.html) and [tables](https://rich.readthedocs.io/en/stable/tables.html); [Python's `shutil.get_terminal_size`](https://docs.python.org/3/library/shutil.html#shutil.get_terminal_size).
 - **Status:** Implemented and tested; see the [Phase 3 terminal output plan](docs/phase-3-terminal-output-plan.md) for report content, formatting, and test coverage.
-- **What we will do:** Render the Phase 2 snapshot as one concise default report with consistent units, optional fields, warnings, and plain output for pipes. Do not add arbitrary health scores or thresholds.
+- **What we will do:** Render the Phase 2 snapshot as one concise default report with consistent units, optional fields, warnings, color, and framed sections that adapt to terminal width. Do not add arbitrary health scores or thresholds.
 - **Deliverable:** A readable default report, with deterministic tests for formatting, missing values, errors, and non-interactive output.
 - **What you will learn:** Presentation versus data collection, terminal capabilities, formatting, accessibility, and output testing.
 
@@ -142,7 +206,7 @@ Work through these phases in order. For each phase, study the linked material **
 - **Before implementing — learn:** How to test a Python package, verify built artifacts, and reason about platform-specific behavior.
 - **Read:** [Python Packaging User Guide: packaging projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/), [uv build and publish](https://docs.astral.sh/uv/guides/package/), and the [psutil platform notes](https://psutil.readthedocs.io/en/latest/).
 - **Status:** In progress; CI and manually gated TestPyPI workflows are implemented locally. Remote GitHub environment and Trusted Publisher configuration, and hosted CI results, remain to be completed. See the [Phase 7 packaging, CI, and release-readiness plan](docs/phase-7-release-readiness-plan.md).
-- **What we will do:** Add GitHub Actions checks using Python 3.13 on Windows, macOS, and Linux, plus the newest stable Python on Ubuntu. Test, build, install the built package in a clean environment, and smoke-test the installed CLI. Add a manually approved TestPyPI publishing path; do not publish automatically or target production PyPI.
+- **What we will do:** Verify GitHub Actions checks using Python 3.13 on Windows, macOS, and Linux, plus the newest stable Python on Ubuntu. Test, build, install the built package in a clean environment, and smoke-test the installed CLI. Configure and validate the manually approved TestPyPI publishing path; do not publish automatically or target production PyPI.
 - **Deliverable:** Reproducible cross-platform checks, verified package artifacts and entry point, documented support limitations, and a manually gated TestPyPI release candidate checklist.
 - **What you will learn:** Packaging, release engineering, CI, cross-platform testing, and how to make support claims based on evidence.
 
@@ -150,80 +214,17 @@ Work through these phases in order. For each phase, study the linked material **
 
 Only after the core commands are dependable, investigate GPU, NPU, temperature, or network metrics individually. **Before each addition**, review the relevant platform or vendor documentation and confirm that it can be optional, privacy-conscious, and tested without making the core CLI unreliable.
 
-## Technology and support
-
-- **Python:** 3.13 or newer.
-- **Package and environment management:** [uv](https://docs.astral.sh/uv/).
-- **System metrics:** `psutil` for portable metrics where the platform supports them.
-- **Terminal output:** `rich` for readable command-line formatting.
-- **Packaging:** `pyproject.toml`, setuptools, and the `speakup` command entry point.
-- **Target platforms:** Windows, macOS, and Linux.
-- **Automated checks:** GitHub Actions is configured for Python 3.13 on Windows, macOS, and Linux, plus the newest stable Python on Ubuntu. Cross-platform support claims remain subject to successful hosted runs and platform/device limitations.
-
-## Getting started
-
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) and Python 3.13 or newer, then run these commands from the repository root:
-
-```bash
-uv sync
-uv run speakup
-```
-
-`uv run speakup` runs the installed project command inside this repository's `.venv` without requiring a global installation. It makes sure the project's dependencies and Python environment are used. A bare `speakup` command works only when the package is installed in the active environment or its executable directory is on `PATH`.
-
-### Install with pip in a virtual environment
-
-This installs System Meter and its `speakup` command into a dedicated Python environment. Run from the repository root.
-
-Windows PowerShell:
-
-```powershell
-py -3.13 -m venv venv
-.\venv\Scripts\Activate.ps1
-python -m pip install .
-speakup
-```
-
-If PowerShell blocks environment activation, you can run the executable directly:
-
-```powershell
-.\venv\Scripts\speakup.exe
-```
-
-macOS or Linux:
-
-```bash
-python3.13 -m venv venv
-source venv/bin/activate
-python -m pip install .
-speakup
-```
-
-The `speakup` command is available while that virtual environment is activated. The separate `venv` directory avoids replacing the `.venv` that `uv sync` creates and avoids modifying the operating system's managed Python installation.
-
-### Install as a user-level command with uv
-
-From the repository root, install the project as an isolated uv tool:
-
-```bash
-uv tool install .
-speakup
-```
-
-This makes `speakup` available without activating the project's development environment, provided uv's tool executable directory is on `PATH`. After publishing the project, it can also be installed from its package index or Git repository.
-
-## Repository layout
+## Project structure
 
 ```text
-src/
-  speakup/       CLI package and system-information modules
-tests/           Automated tests
 .github/
-  workflows/     Cross-platform CI and manually gated TestPyPI release candidate
-scripts/         Installed-package smoke test used by CI
-pyproject.toml   Project metadata, dependencies, and CLI entry point
-MANIFEST.in      Source distribution contents
-uv.lock          Reproducible dependency resolution
-.python-version  Preferred Python version for uv
-README.md        Project direction, setup, and roadmap
+  workflows/       Cross-platform CI and manually gated TestPyPI release candidate
+docs/              Phase-by-phase learning and implementation plans
+scripts/           Installed-package smoke test used by CI
+src/speakup/       CLI, collectors, renderers, and serialization
+tests/             Automated unittest suite
+MANIFEST.in        Source distribution contents
+pyproject.toml     Package metadata, dependencies, and CLI entry point
+uv.lock            Reproducible dependency resolution
+.python-version    Preferred Python version for uv
 ```
