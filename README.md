@@ -2,7 +2,7 @@
 
 System Meter (`speakup`) is a cross-platform command-line tool for getting a fast snapshot of a computer's system information. It aims to help developers, IT/helpdesk teams, and operators quickly inspect resource usage without opening a graphical system monitor.
 
-> **Status:** The default `speakup` command displays a human-readable snapshot. `speakup --json` emits versioned JSON, `speakup --quiet` silently checks whether snapshot collection succeeds, and `speakup doctor` prints a local diagnostic summary. Watch mode is not implemented yet.
+> **Status:** The default `speakup` command displays a human-readable snapshot. `speakup --json` emits versioned JSON, `speakup --quiet` silently checks whether snapshot collection succeeds, `speakup doctor` prints a local diagnostic summary, and `speakup watch` refreshes snapshots in the terminal or streams JSON Lines.
 
 ## Product direction
 
@@ -40,15 +40,15 @@ Unavailable metrics should be explained plainly rather than shown as empty value
 
 ### Practical troubleshooting
 
-A future `speakup doctor` command should print a local, reviewable diagnostic summary that is easy to inspect or intentionally redirect to a support file. It should explain what information is included, avoid personal data, and never upload or transmit diagnostics automatically.
+`speakup doctor` prints a local, reviewable diagnostic summary that is easy to inspect or intentionally redirect to a support file. It explains what information is included, avoids personal data, and never uploads or transmits diagnostics automatically.
 
 ### The `watch` command
 
-`speakup watch` should periodically refresh the same compact snapshot in the terminal so a user can observe changing values. It remains a terminal command—not a separate graphical app or a full-screen dashboard. It should be easy to stop and should avoid excessive resource use.
+`speakup watch` periodically refreshes the same compact snapshot in an interactive terminal so a user can observe changing values. Use `--interval SECONDS` to choose a refresh interval (minimum 1 second, default 2); use `--json` before `watch` for one versioned JSON object per line in pipes and logs. It remains a terminal command—not a separate graphical app or a full-screen dashboard—and Ctrl+C stops it.
 
-## Planned command interface
+## Command interface
 
-These commands describe the CLI. Implemented behavior is noted; planned behavior remains **not implemented yet**:
+These commands describe the current CLI behavior:
 
 | Command | Intended purpose |
 | --- | --- |
@@ -56,9 +56,10 @@ These commands describe the CLI. Implemented behavior is noted; planned behavior
 | `speakup --json` | **Implemented:** Print one snapshot as versioned JSON. See the [JSON schema plan](docs/phase-4-json-and-quiet-plan.md#proposed-json-contract). |
 | `speakup --quiet` | **Implemented:** Silently check collection success; no health thresholds are applied. |
 | `speakup doctor` | **Implemented:** Print a local diagnostic summary of collected metrics and limitations. The report is not a health assessment. |
-| `speakup watch` | **Planned:** Repeatedly refresh the compact terminal snapshot until stopped. |
+| `speakup watch [--interval SECONDS]` | **Implemented:** Refresh the human-readable snapshot in place in a terminal. Ctrl+C exits with status 130; redirected output requires JSON mode. |
+| `speakup --json watch [--interval SECONDS]` | **Implemented:** Emit one schema-versioned JSON object per successful sample, one object per line. |
 
-The options and subcommands should have consistent help text and clear errors. The [Phase 4 plan](docs/phase-4-json-and-quiet-plan.md) documents JSON compatibility and quiet-mode exit behavior.
+The options and subcommands have consistent help text and clear errors. The [Phase 4 plan](docs/phase-4-json-and-quiet-plan.md) documents JSON compatibility and quiet-mode exit behavior; the [Phase 6 plan](docs/phase-6-watch-plan.md) documents the watch loop and JSON Lines contract.
 
 ## What makes it feel polished
 
@@ -130,7 +131,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How to handle repeated work, intervals, clean shutdown, and terminal refresh behavior without creating a graphical interface.
 - **Read:** [Python's `time` documentation](https://docs.python.org/3/library/time.html), [Python's signal handling documentation](https://docs.python.org/3/library/signal.html), and Rich's [live display documentation](https://rich.readthedocs.io/en/stable/live.html).
-- **Status:** Planned; behavior and test contract agreed. See the [Phase 6 watch and testing plan](docs/phase-6-watch-plan.md).
+- **Status:** Implemented and tested; see the [Phase 6 watch and testing plan](docs/phase-6-watch-plan.md).
 - **What we will do:** Implement `speakup watch` with a configurable interval (default 2 seconds), a refreshed human-readable view in interactive terminals, and versioned JSON Lines output with `speakup --json watch`. Stop cleanly on Ctrl+C and avoid unnecessary CPU use. Keep it a terminal command, not a dashboard application.
 - **Deliverable:** A responsive watch mode with validated interval settings, testable refresh/error/stop behavior, automation-friendly JSON Lines, and clear help text.
 - **What you will learn:** Loops and timing, interruption handling, reusable components, and testing behavior that changes over time.

@@ -3,7 +3,7 @@ import sys
 from datetime import UTC
 
 from rich import box
-from rich.console import Console
+from rich.console import Console, Group, RenderableType
 from rich.table import Table
 from rich.text import Text
 
@@ -25,7 +25,11 @@ def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) ->
             soft_wrap=True,
         )
 
-    console.print(Text("System Meter", style="bold cyan"))
+    console.print(snapshot_renderable(snapshot, console.width))
+
+
+def snapshot_renderable(snapshot: SystemSnapshot, width: int) -> RenderableType:
+    renderables: list[RenderableType] = [Text("System Meter", style="bold cyan")]
     captured_at = snapshot.captured_at.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
 
     system_table = Table(
@@ -44,8 +48,7 @@ def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) ->
     system_table.add_row("Architecture", _optional(snapshot.system.architecture))
     system_table.add_row("Uptime", format_uptime(snapshot.uptime_seconds))
     system_table.add_row("Captured", captured_at)
-    console.print(Text("System", style="bold"))
-    console.print(system_table)
+    renderables.extend((Text("System", style="bold"), system_table))
 
     cpu_table = Table(box=box.SIMPLE, show_header=False, padding=(0, 1))
     cpu_table.add_column("Property", style="bold")
@@ -58,8 +61,7 @@ def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) ->
         if snapshot.cpu.physical_cores is not None
         else "not available",
     )
-    console.print(Text("CPU", style="bold"))
-    console.print(cpu_table)
+    renderables.extend((Text("CPU", style="bold"), cpu_table))
 
     memory_table = Table(box=box.SIMPLE, show_header=False, padding=(0, 1))
     memory_table.add_column("Property", style="bold")
@@ -74,22 +76,20 @@ def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) ->
         "Available",
         format_bytes(snapshot.memory.available_bytes),
     )
-    console.print(Text("Memory", style="bold"))
-    console.print(memory_table)
+    renderables.extend((Text("Memory", style="bold"), memory_table))
 
-    console.print(Text("Storage", style="bold"))
+    renderables.append(Text("Storage", style="bold"))
     if snapshot.disks:
-        if console.width < 80:
+        if width < 80:
             for disk in snapshot.disks:
-                console.print(
+                renderables.append(
                     Text(
                         f"{disk.mount_point}: "
                         f"{format_bytes(disk.used_bytes)} used / "
                         f"{format_bytes(disk.total_bytes)} total, "
                         f"{format_bytes(disk.free_bytes)} free "
                         f"({format_percentage(disk.utilization_percent)} used)"
-                    ),
-                    soft_wrap=True,
+                    )
                 )
         else:
             disk_table = Table(
@@ -110,9 +110,9 @@ def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) ->
                     format_bytes(disk.free_bytes),
                     format_percentage(disk.utilization_percent),
                 )
-            console.print(disk_table)
+            renderables.append(disk_table)
     else:
-        console.print("No storage information available.")
+        renderables.append(Text("No storage information available."))
 
     if snapshot.battery is not None:
         battery = snapshot.battery
@@ -123,16 +123,22 @@ def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) ->
         else:
             power_state = "power state not available"
 
-        console.print(Text("Battery", style="bold"))
-        console.print(
-            f"Charge: {format_percentage(battery.percent)} "
-            f"({power_state})"
+        renderables.extend(
+            (
+                Text("Battery", style="bold"),
+                Text(
+                    f"Charge: {format_percentage(battery.percent)} "
+                    f"({power_state})"
+                ),
+            )
         )
 
     if snapshot.warnings:
-        console.print(Text("Notes", style="bold"))
+        renderables.append(Text("Notes", style="bold"))
         for warning in snapshot.warnings:
-            console.print(Text(f"- {warning}"))
+            renderables.append(Text(f"- {warning}"))
+
+    return Group(*renderables)
 
 
 def render_doctor_report(

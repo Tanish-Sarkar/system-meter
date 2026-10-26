@@ -220,12 +220,95 @@ class MainTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "unexpected bug"):
                 main(["doctor"])
 
-    def test_watch_remains_unimplemented(self):
-        status, stdout, stderr = self.run_cli(["watch"])
+    def test_watch_parser_defaults_to_two_seconds_and_accepts_fractional_interval(self):
+        parser = build_parser()
+
+        default_args = parser.parse_args(["watch"])
+        fractional_args = parser.parse_args(["watch", "--interval", "1.5"])
+
+        self.assertEqual(default_args.interval, 2.0)
+        self.assertEqual(fractional_args.interval, 1.5)
+
+    def test_watch_help_documents_interval(self):
+        stderr = StringIO()
+        output = StringIO()
+        with (
+            redirect_stdout(output),
+            redirect_stderr(stderr),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            main(["watch", "--help"])
+
+        self.assertEqual(raised.exception.code, 0)
+        self.assertIn("--interval SECONDS", output.getvalue())
+        self.assertIn("default: 2", output.getvalue())
+
+    def test_watch_parser_rejects_invalid_intervals(self):
+        for interval in ("abc", "0", "0.5", "-1", "nan", "inf", "-inf"):
+            with self.subTest(interval=interval):
+                stderr = StringIO()
+                with redirect_stderr(stderr), self.assertRaises(SystemExit) as raised:
+                    build_parser().parse_args(["watch", f"--interval={interval}"])
+
+                self.assertEqual(raised.exception.code, 2)
+                self.assertIn("finite number of at least 1 second", stderr.getvalue())
+
+    def test_watch_rejects_redirected_human_output_with_json_guidance(self):
+        stderr = StringIO()
+        with (
+            redirect_stderr(stderr),
+            redirect_stdout(StringIO()),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            main(["watch"])
+
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("use --json for piped output", stderr.getvalue())
+
+    def test_quiet_watch_is_rejected(self):
+        stderr = StringIO()
+        with (
+            redirect_stderr(stderr),
+            self.assertRaises(SystemExit) as raised,
+        ):
+            main(["--quiet", "watch"])
+
+        self.assertEqual(raised.exception.code, 2)
+        self.assertIn("--quiet cannot be used with watch", stderr.getvalue())
+
+    def test_watch_returns_interrupt_status_without_traceback(self):
+        with patch(
+            "speakup.main.run_watch",
+            side_effect=KeyboardInterrupt,
+        ) as run_watch:
+            status, stdout, stderr = self.run_cli(["--json", "watch"])
+
+        self.assertEqual(status, 130)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "")
+        run_watch.assert_called_once_with(2.0, json_output=True)
+
+    def test_watch_collection_failure_is_reported(self):
+        with patch(
+            "speakup.main.run_watch",
+            side_effect=SnapshotCollectionError("CPU unavailable"),
+        ):
+            status, stdout, stderr = self.run_cli(["--json", "watch"])
 
         self.assertEqual(status, 1)
         self.assertEqual(stdout, "")
-        self.assertEqual(stderr, "Watch mode is not implemented yet.\n")
+        self.assertEqual(stderr, "Unable to collect watch snapshot: CPU unavailable\n")
+
+    def test_watch_serialization_failure_is_reported(self):
+        with patch(
+            "speakup.main.run_watch",
+            side_effect=SnapshotSerializationError("invalid snapshot"),
+        ):
+            status, stdout, stderr = self.run_cli(["--json", "watch"])
+
+        self.assertEqual(status, 1)
+        self.assertEqual(stdout, "")
+        self.assertEqual(stderr, "Unable to serialize watch snapshot: invalid snapshot\n")
 
     def test_snapshot_output_modes_are_mutually_exclusive(self):
         stderr = StringIO()

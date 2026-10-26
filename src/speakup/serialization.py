@@ -69,13 +69,14 @@ def snapshot_to_dict(snapshot: SystemSnapshot) -> dict[str, object]:
     }
 
 
-def serialize_snapshot(snapshot: SystemSnapshot) -> str:
+def _serialize_snapshot(snapshot: SystemSnapshot, *, compact: bool) -> str:
     try:
         return json.dumps(
             snapshot_to_dict(snapshot),
             ensure_ascii=True,
             allow_nan=False,
-            indent=2,
+            indent=None if compact else 2,
+            separators=(",", ":") if compact else None,
         )
     except (TypeError, ValueError) as exc:
         if isinstance(exc, SnapshotSerializationError):
@@ -83,3 +84,11 @@ def serialize_snapshot(snapshot: SystemSnapshot) -> str:
         raise SnapshotSerializationError(
             "Snapshot contains data that cannot be encoded as valid JSON."
         ) from exc
+
+
+def serialize_snapshot(snapshot: SystemSnapshot) -> str:
+    return _serialize_snapshot(snapshot, compact=False)
+
+
+def serialize_snapshot_line(snapshot: SystemSnapshot) -> str:
+    return _serialize_snapshot(snapshot, compact=True)

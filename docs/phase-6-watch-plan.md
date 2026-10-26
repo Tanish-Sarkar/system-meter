@@ -2,7 +2,7 @@
 
 This document turns Phase 6 of the [project roadmap](../README.md#learning-first-development-plan) into an implementation and testing plan. Watch mode will repeatedly collect the existing system snapshot and present it either as a refreshed terminal view or as JSON Lines for automation.
 
-**Status:** Planned; behavior decisions confirmed. Watch mode is not implemented yet.
+**Status:** Implemented and tested. The acceptance checklist records the completed Phase 6 behavior.
 
 ## Goal
 
@@ -59,7 +59,7 @@ Study these resources before implementation:
 - Unexpected programming errors must not be hidden by a broad exception handler.
 - The command remains read-only and performs no network requests or file writes.
 
-## Suggested implementation design
+## Implementation design
 
 - Keep command routing and exit statuses in `main.py`, with a focused watch loop in a small module or helper if that makes timing and output mode responsibilities easier to test.
 - Inject or patch the collector, monotonic clock, sleep function, and output console in tests; tests must not wait for real intervals or inspect the host's live metrics.
@@ -131,7 +131,7 @@ After the automated tests pass:
 4. Redirect human-mode output and confirm it fails promptly with the `--json` guidance rather than filling a file.
 5. Verify the normal one-shot snapshot, `--json`, `--quiet`, and `doctor` commands still work.
 
-## Suggested implementation sequence
+## Implementation sequence
 
 1. Read the timing, signal, Rich Live, and mocking references above.
 2. Add interval parser tests, output-mode tests, and deterministic loop tests before implementation.
@@ -142,17 +142,17 @@ After the automated tests pass:
 
 ## Acceptance checklist
 
-- [ ] `speakup watch` refreshes a human-readable view in place when stdout is a terminal.
-- [ ] Human watch mode rejects redirected stdout with a clear instruction to use `--json`.
-- [ ] The default refresh interval is 2 seconds; finite intervals of at least 1 second are accepted.
-- [ ] Invalid intervals and unsupported output-mode combinations return **2** with useful usage feedback.
-- [ ] `speakup --json watch` emits one valid, versioned JSON object per successful sample, one per line.
-- [ ] Collection and serialization failures return **1**, report to stderr, and do not produce a false or partial success.
-- [ ] Ctrl+C exits without a traceback, cleans up the live display, and returns **130**.
-- [ ] The loop sleeps and uses monotonic time; it does not busy-spin or recollect while displaying the same sample.
-- [ ] Existing snapshot, JSON, quiet, doctor, and help/version behavior remains unchanged.
-- [ ] Tests use controlled clocks, fixed snapshots, and mocks; no real wait or hardware dependency is required.
-- [ ] No new dependency, file-write behavior, network behavior, or graphical dashboard is introduced.
+- [x] `speakup watch` refreshes a human-readable view in place when stdout is a terminal.
+- [x] Human watch mode rejects redirected stdout with a clear instruction to use `--json`.
+- [x] The default refresh interval is 2 seconds; finite intervals of at least 1 second are accepted.
+- [x] Invalid intervals and unsupported output-mode combinations return **2** with useful usage feedback.
+- [x] `speakup --json watch` emits one valid, versioned JSON object per successful sample, one per line.
+- [x] Collection and serialization failures return **1**, report to stderr, and do not produce a false or partial success.
+- [x] Ctrl+C exits without a traceback, cleans up the live display, and returns **130**.
+- [x] The loop sleeps and uses monotonic time; it does not busy-spin or recollect while displaying the same sample.
+- [x] Existing snapshot, JSON, quiet, doctor, and help/version behavior remains unchanged.
+- [x] Tests use controlled clocks, fixed snapshots, and mocks; no real wait or hardware dependency is required.
+- [x] No new dependency, file-write behavior, network behavior, or graphical dashboard is introduced.
 
 ## Deliverable and learning outcome
 
