@@ -140,8 +140,9 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How to test a Python package, verify built artifacts, and reason about platform-specific behavior.
 - **Read:** [Python Packaging User Guide: packaging projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/), [uv build and publish](https://docs.astral.sh/uv/guides/package/), and the [psutil platform notes](https://psutil.readthedocs.io/en/latest/).
-- **What we will do:** Run the test suite and package build, verify installation and entry-point invocation, and document differences and limitations for Windows, macOS, and Linux. Add CI across supported platforms before calling cross-platform behavior verified.
-- **Deliverable:** Reproducible builds, documented installation and support, passing automated checks, and a clear first-release checklist.
+- **Status:** Planned; CI and release scope agreed. See the [Phase 7 packaging, CI, and release-readiness plan](docs/phase-7-release-readiness-plan.md).
+- **What we will do:** Add GitHub Actions checks using Python 3.13 on Windows, macOS, and Linux, plus the newest stable Python on Ubuntu. Test, build, install the built package in a clean environment, and smoke-test the installed CLI. Add a manually approved TestPyPI publishing path; do not publish automatically or target production PyPI.
+- **Deliverable:** Reproducible cross-platform checks, verified package artifacts and entry point, documented support limitations, and a manually gated TestPyPI release candidate checklist.
 - **What you will learn:** Packaging, release engineering, CI, cross-platform testing, and how to make support claims based on evidence.
 
 ### Later — Optional metrics and integrations
