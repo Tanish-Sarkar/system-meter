@@ -2,7 +2,7 @@
 
 This document turns Phase 7 of the [project roadmap](../README.md#learning-first-development-plan) into an implementation and testing plan. It prepares System Meter for real users by validating the package and CLI on the declared platforms and by adding a manually approved TestPyPI release path.
 
-**Status:** Planned; scope decisions confirmed. No CI workflow or publishing workflow is implemented yet.
+**Status:** CI and TestPyPI workflow scaffolding implemented locally. Hosted matrix runs and GitHub/TestPyPI configuration are still required before release readiness can be claimed.
 
 ## Goal
 
@@ -39,7 +39,7 @@ Study these resources before implementation:
 
 For each matrix entry:
 
-1. Check out the repository and install the selected Python and a pinned or otherwise reproducibly installed uv version.
+1. Check out the repository and install the selected Python and the CI-pinned uv version **0.12.19**.
 2. Run `uv sync --locked` so CI fails if `uv.lock` is out of date or inconsistent with `pyproject.toml`.
 3. Run the full suite with `uv run python -m unittest discover -s tests`.
 4. Build source and wheel distributions with `uv build`.
@@ -76,6 +76,7 @@ Watch mode is already covered with mocked time and collection in unit tests. CI 
 - Do not add a production PyPI publishing workflow, credentials, or automatic release trigger in this phase.
 - After an approved upload, verify the TestPyPI project page and install the candidate into a clean environment using TestPyPI as the package index. Confirm `speakup --version` and a JSON smoke check work.
 - Document that TestPyPI is a staging check and that installing from it may require access to both TestPyPI and the normal package index for dependencies.
+- Before dispatching this workflow, increment the project version in `pyproject.toml` and update `uv.lock`, then configure a protected GitHub environment named `testpypi` with required reviewers and deployment branches restricted to `main`. Configure TestPyPI Trusted Publishing for this repository, workflow file (`publish-testpypi.yml`), and environment name. YAML can reference this environment but cannot create or enforce its reviewer or branch rules.
 
 ## Testing strategy
 
@@ -119,23 +120,28 @@ Automated CI does not guarantee behavior on every device or terminal. Before mak
 4. Exercise the workflow and fix only failures attributable to the project or workflow; record environmental runner limitations separately.
 5. Review built archive contents and verify the installed CLI does not import from the repository checkout.
 6. Add the protected, manual TestPyPI publishing workflow with least-privilege OIDC configuration and no production publishing path.
-7. Run the complete local suite/build and validate the release candidate using the actual TestPyPI workflow only after the repository's environment protection and trusted-publisher settings are configured.
-8. Update the README with the verified CI matrix, support caveats, and package installation instructions, then complete the first-release checklist.
+7. Increment the package version and update the lockfile before a TestPyPI run; TestPyPI does not allow reusing an already published version.
+8. Run the complete local suite/build and validate the release candidate using the actual TestPyPI workflow only after the repository's environment protection and trusted-publisher settings are configured.
+9. Update the README with the verified CI matrix, support caveats, and package installation instructions, then complete the first-release checklist.
 
 ## Acceptance checklist
 
-- [ ] GitHub Actions tests Python 3.13 on Windows, macOS, and Linux.
-- [ ] CI tests the newest stable supported Python on Ubuntu as well as the declared minimum.
-- [ ] CI uses `uv sync --locked` and runs the full unittest suite.
-- [ ] Both sdist and wheel build successfully in CI.
-- [ ] The built wheel installs in an isolated environment on each required OS and the installed `speakup` entry point works.
-- [ ] Installed CLI smoke checks cover version, JSON schema/output, quiet mode, and doctor without assuming optional metrics exist.
-- [ ] Workflow permissions are least-privilege, and ordinary tests/builds cannot publish.
-- [ ] A separate manual TestPyPI workflow requires protected-environment approval and uses Trusted Publishing/OIDC.
-- [ ] The publishing path uploads the exact validated artifacts to TestPyPI only; no production PyPI path is added.
-- [ ] A TestPyPI candidate can be installed in a clean environment and passes the version/JSON smoke checks.
+- [x] GitHub Actions workflow is configured for Python 3.13 on Windows, macOS, and Linux.
+- [x] CI includes the newest stable Python selector on Ubuntu as well as the declared minimum.
+- [x] CI uses `uv sync --locked` and runs the full unittest suite.
+- [x] CI builds both sdist and wheel distributions.
+- [x] CI installs the built wheel in a temporary isolated environment outside the source checkout and smoke-tests the installed entry point.
+- [x] Installed CLI smoke checks cover version, JSON schema/output, quiet mode, and doctor without assuming optional metrics exist.
+- [x] Workflow permissions are least-privilege, and ordinary tests/builds cannot publish.
+- [x] A separate manual TestPyPI workflow references a protected environment and uses Trusted Publishing/OIDC.
+- [x] The publishing path uploads the exact validated artifacts to TestPyPI only; no production PyPI path is added.
+- [x] The workflow includes a clean-environment installation and version/JSON smoke check for the TestPyPI candidate.
+- [ ] Configure required reviewers and `main`-only deployment branches on the GitHub `testpypi` environment and register the TestPyPI Trusted Publisher.
+- [ ] Hosted CI succeeds on all matrix entries.
+- [ ] A TestPyPI candidate is published and installed successfully after manual approval.
 - [ ] Documentation distinguishes CI verification from manual platform/device checks and states known limitations accurately.
-- [ ] Archive contents are reviewed and contain no local environments, caches, generated reports, or secrets.
+- [x] The source distribution excludes the test suite; the wheel contains only runtime package files and distribution metadata.
+- [x] Built archive contents were inspected; they contain only package source, required metadata, and project documentation—no environments, caches, generated reports, or secrets.
 
 ## Deliverable and learning outcome
 

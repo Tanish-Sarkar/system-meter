@@ -140,7 +140,7 @@ Work through these phases in order. For each phase, study the linked material **
 
 - **Before implementing — learn:** How to test a Python package, verify built artifacts, and reason about platform-specific behavior.
 - **Read:** [Python Packaging User Guide: packaging projects](https://packaging.python.org/en/latest/tutorials/packaging-projects/), [uv build and publish](https://docs.astral.sh/uv/guides/package/), and the [psutil platform notes](https://psutil.readthedocs.io/en/latest/).
-- **Status:** Planned; CI and release scope agreed. See the [Phase 7 packaging, CI, and release-readiness plan](docs/phase-7-release-readiness-plan.md).
+- **Status:** In progress; CI and manually gated TestPyPI workflows are implemented locally. Remote GitHub environment and Trusted Publisher configuration, and hosted CI results, remain to be completed. See the [Phase 7 packaging, CI, and release-readiness plan](docs/phase-7-release-readiness-plan.md).
 - **What we will do:** Add GitHub Actions checks using Python 3.13 on Windows, macOS, and Linux, plus the newest stable Python on Ubuntu. Test, build, install the built package in a clean environment, and smoke-test the installed CLI. Add a manually approved TestPyPI publishing path; do not publish automatically or target production PyPI.
 - **Deliverable:** Reproducible cross-platform checks, verified package artifacts and entry point, documented support limitations, and a manually gated TestPyPI release candidate checklist.
 - **What you will learn:** Packaging, release engineering, CI, cross-platform testing, and how to make support claims based on evidence.
@@ -157,6 +157,7 @@ Only after the core commands are dependable, investigate GPU, NPU, temperature, 
 - **Terminal output:** `rich` for readable command-line formatting.
 - **Packaging:** `pyproject.toml`, setuptools, and the `speakup` command entry point.
 - **Target platforms:** Windows, macOS, and Linux.
+- **Automated checks:** GitHub Actions is configured for Python 3.13 on Windows, macOS, and Linux, plus the newest stable Python on Ubuntu. Cross-platform support claims remain subject to successful hosted runs and platform/device limitations.
 
 ## Getting started
 
@@ -182,7 +183,11 @@ Replace `<OWNER>` and `<REPOSITORY>` with the actual GitHub owner and repository
 src/
   speakup/       CLI package and system-information modules
 tests/           Automated tests
+.github/
+  workflows/     Cross-platform CI and manually gated TestPyPI release candidate
+scripts/         Installed-package smoke test used by CI
 pyproject.toml   Project metadata, dependencies, and CLI entry point
+MANIFEST.in      Source distribution contents
 uv.lock          Reproducible dependency resolution
 .python-version  Preferred Python version for uv
 README.md        Project direction, setup, and roadmap
