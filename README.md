@@ -45,50 +45,73 @@ Example values are illustrative; available metrics depend on the host.
 
 ## Install
 
-System Meter requires **Python 3.13 or newer**. Install Git if you use the GitHub repository URL. Choose one installation method.
+System Meter requires **Python 3.13 or newer**. Choose one installation method below.
 
 Project website and installation guide: [System Meter on GitHub Pages](https://tanish-sarkar.github.io/system-meter/).
 
-### Install from this GitHub repository with pip
+### Step 1 — Install Python 3.13
 
-The repository must be public for anonymous GitHub installation. Create and activate a virtual environment, then install the package directly from the repository.
+Skip this step if you already have Python 3.13+ installed.
+
+**Windows (PowerShell)**
+
+```powershell
+winget install Python.Python.3.13
+```
+
+Restart your terminal after installation, then verify with `py -3.13 --version`.
+
+**macOS (Homebrew)**
+
+```bash
+brew install python@3.13
+```
+
+Verify with `python3.13 --version`.
+
+**Linux (Ubuntu / Debian)**
+
+```bash
+sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.13
+```
+
+Verify with `python3.13 --version`.
+
+### Step 2 — Install speakup (choose a method)
+
+#### Install globally with pip
+
+Installs `speakup` as a globally available command — no virtual environment needed.
 
 **Windows PowerShell**
 
 ```powershell
-py -3.13 -m venv venv
-.\venv\Scripts\Activate.ps1
-python -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
-speakup
+py -3.13 -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
 ```
-
-If activation is blocked, invoke it directly as `.\venv\Scripts\speakup.exe`.
 
 **macOS / Linux**
 
 ```bash
-python3.13 -m venv venv
-source venv/bin/activate
-python -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
-speakup
+python3.13 -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
 ```
 
-The `speakup` executable is available while the environment is active. To upgrade later:
+To upgrade later:
 
 ```bash
-python -m pip install --upgrade git+https://github.com/Tanish-Sarkar/system-meter.git
+pip install --upgrade git+https://github.com/Tanish-Sarkar/system-meter.git
 ```
 
-### Install as a user-level tool with uv
+#### Install as a user-level tool with uv
 
 ```bash
 uv tool install git+https://github.com/Tanish-Sarkar/system-meter.git
-speakup
 ```
 
 This installs the command in an isolated environment managed by uv. If the shell cannot find `speakup`, ensure uv's tool executable directory is on your `PATH` (see `uv tool update-shell`).
 
-### Run from a local checkout (development)
+#### Run from a local checkout (development)
 
 ```bash
 git clone https://github.com/Tanish-Sarkar/system-meter.git
@@ -97,7 +120,17 @@ uv sync
 uv run speakup
 ```
 
-`uv run speakup` uses the project's `.venv` and dependencies. It is intended for development and does not install the command globally. A bare `speakup` works after installing the package in an active environment or as a uv tool.
+`uv run speakup` uses the project's `.venv` and dependencies. It is intended for development and does not install the command globally.
+
+### Step 3 — Run speakup
+
+After installation, open a new terminal and run:
+
+```bash
+speakup
+```
+
+That's it. You should see a colorful, framed system snapshot.
 
 ## Commands
 

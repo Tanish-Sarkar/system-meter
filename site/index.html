@@ -199,6 +199,7 @@
     <nav class="nav" aria-label="Main navigation">
       <a href="#features">Features</a>
       <a href="#install">Install</a>
+      <a href="#run">Run</a>
       <a href="#commands">Commands</a>
       <a class="github-link" href="https://github.com/Tanish-Sarkar/system-meter" target="_blank" rel="noopener noreferrer">GitHub ↗</a>
     </nav>
@@ -279,8 +280,8 @@
       <div class="wrap install-layout">
         <div class="install-aside">
           <span class="kicker">Get started</span>
-          <h2>One install.<br>One command.</h2>
-          <p>Choose pip inside a virtual environment, or install an isolated command with uv.</p>
+          <h2>Three steps.<br>One command.</h2>
+          <p>Install Python 3.13, install speakup globally, then run it from any terminal.</p>
           <ul>
             <li>Requires Python 3.13 or newer</li>
             <li>Git is required for installing from the repository URL</li>
@@ -291,29 +292,35 @@
         </div>
         <div class="install-card">
           <div class="tabs" role="tablist" aria-label="Choose an installation method">
-            <button class="tab" id="tab-pip" type="button" role="tab" aria-selected="true" aria-controls="panel-pip" tabindex="0">pip · virtual environment</button>
-            <button class="tab" id="tab-uv" type="button" role="tab" aria-selected="false" aria-controls="panel-uv" tabindex="-1">uv · user tool</button>
+            <button class="tab" id="tab-python" type="button" role="tab" aria-selected="true" aria-controls="panel-python" tabindex="0">Step 1 · Python 3.13</button>
+            <button class="tab" id="tab-pip" type="button" role="tab" aria-selected="false" aria-controls="panel-pip" tabindex="-1">Step 2 · pip (global)</button>
+            <button class="tab" id="tab-uv" type="button" role="tab" aria-selected="false" aria-controls="panel-uv" tabindex="-1">Step 2 · uv tool</button>
           </div>
-          <div class="install-panel" id="panel-pip" role="tabpanel" aria-labelledby="tab-pip">
-            <h3>Install with pip</h3>
-            <p>Create a virtual environment, activate it, and install directly from GitHub.</p>
+          <div class="install-panel" id="panel-python" role="tabpanel" aria-labelledby="tab-python">
+            <h3>Install Python 3.13</h3>
+            <p>Skip this step if Python 3.13+ is already installed. Verify with <code>python --version</code> after install.</p>
             <h3>Windows · PowerShell</h3>
-            <div class="command"><code>py -3.13 -m venv venv
-.\venv\Scripts\Activate.ps1
-python -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
-speakup</code><button class="copy-button" type="button" aria-label="Copy Windows pip commands">Copy</button></div>
+            <div class="command"><code>winget install Python.Python.3.13</code><button class="copy-button" type="button" aria-label="Copy Windows Python install command">Copy</button></div>
+            <h3>macOS · Homebrew</h3>
+            <div class="command"><code>brew install python@3.13</code><button class="copy-button" type="button" aria-label="Copy macOS Python install command">Copy</button></div>
+            <h3>Linux · Ubuntu / Debian</h3>
+            <div class="command"><code>sudo add-apt-repository ppa:deadsnakes/ppa
+sudo apt update
+sudo apt install python3.13</code><button class="copy-button" type="button" aria-label="Copy Linux Python install commands">Copy</button></div>
+          </div>
+          <div class="install-panel" id="panel-pip" role="tabpanel" aria-labelledby="tab-pip" hidden>
+            <h3>Install globally with pip</h3>
+            <p>Installs <code>speakup</code> as a globally available command — no virtual environment needed.</p>
+            <h3>Windows · PowerShell</h3>
+            <div class="command"><code>py -3.13 -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git</code><button class="copy-button" type="button" aria-label="Copy Windows pip command">Copy</button></div>
             <h3>macOS · Linux</h3>
-            <div class="command"><code>python3.13 -m venv venv
-source venv/bin/activate
-python -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
-speakup</code><button class="copy-button" type="button" aria-label="Copy macOS and Linux pip commands">Copy</button></div>
-            <div class="note">Keep the virtual environment active to use <code>speakup</code>. To upgrade later, repeat the pip install command with <code>--upgrade</code>.</div>
+            <div class="command"><code>python3.13 -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git</code><button class="copy-button" type="button" aria-label="Copy macOS and Linux pip command">Copy</button></div>
+            <div class="note">To upgrade later, run <code>pip install --upgrade git+https://github.com/Tanish-Sarkar/system-meter.git</code></div>
           </div>
           <div class="install-panel" id="panel-uv" role="tabpanel" aria-labelledby="tab-uv" hidden>
             <h3>Install as a uv tool</h3>
             <p>uv installs the app in an isolated environment and exposes its command without activating a project environment.</p>
-            <div class="command"><code>uv tool install git+https://github.com/Tanish-Sarkar/system-meter.git
-speakup</code><button class="copy-button" type="button" aria-label="Copy uv installation commands">Copy</button></div>
+            <div class="command"><code>uv tool install git+https://github.com/Tanish-Sarkar/system-meter.git</code><button class="copy-button" type="button" aria-label="Copy uv installation command">Copy</button></div>
             <p>If your shell cannot find <code>speakup</code>, add uv's tool executable directory to your <code>PATH</code> using <code>uv tool update-shell</code>, then restart the terminal.</p>
             <a class="text-link" href="https://docs.astral.sh/uv/guides/tools/" target="_blank" rel="noopener noreferrer">Learn about uv tools ↗</a>
           </div>
@@ -322,12 +329,24 @@ speakup</code><button class="copy-button" type="button" aria-label="Copy uv inst
       </div>
     </section>
 
+    <section id="run" class="section">
+      <div class="wrap">
+        <div class="section-heading">
+          <span class="kicker">Step 3</span>
+          <h2>Run speakup.</h2>
+          <p>Open a new terminal window after installation and run the command below.</p>
+        </div>
+        <div class="command" style="max-width:480px"><code>speakup</code><button class="copy-button" type="button" aria-label="Copy speakup command">Copy</button></div>
+        <p class="muted" style="margin-top:.5rem">You should see a colorful, framed system snapshot with CPU, memory, storage, battery, and uptime.</p>
+      </div>
+    </section>
+
     <section id="commands" class="section">
       <div class="wrap">
         <div class="section-heading">
           <span class="kicker">Everyday usage</span>
           <h2>From quick check to live stream.</h2>
-          <p>Run these after installing and activating your pip environment, or after installing with uv.</p>
+          <p>Run these after installing speakup globally or as a uv tool.</p>
         </div>
         <div class="command-grid">
           <article class="command-card"><code>speakup</code><p>Show one colorful, human-readable system snapshot.</p></article>
