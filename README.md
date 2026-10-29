@@ -97,10 +97,18 @@ py -3.13 -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
 python3.13 -m pip install git+https://github.com/Tanish-Sarkar/system-meter.git
 ```
 
-To upgrade later:
+To upgrade to the latest version or commit:
+
+**Windows PowerShell**
+
+```powershell
+py -3.13 -m pip install --upgrade --force-reinstall --no-cache-dir git+https://github.com/Tanish-Sarkar/system-meter.git
+```
+
+**macOS / Linux**
 
 ```bash
-pip install --upgrade git+https://github.com/Tanish-Sarkar/system-meter.git
+python3.13 -m pip install --upgrade --force-reinstall --no-cache-dir git+https://github.com/Tanish-Sarkar/system-meter.git
 ```
 
 #### Install as a user-level tool with uv

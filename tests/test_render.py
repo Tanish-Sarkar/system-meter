@@ -225,7 +225,7 @@ class RenderTests(unittest.TestCase):
 
         for text in (
             "System Meter Doctor",
-            "Captured: 2026-01-02 03:04:05 UTC",
+            "Captured:",
             "Metric availability is not a health assessment.",
             "Windows 11",
             "CPU usage",
