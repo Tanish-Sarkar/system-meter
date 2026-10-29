@@ -1,6 +1,6 @@
 import os
 import sys
-from datetime import UTC
+from datetime import datetime
 
 from rich import box
 from rich.console import Console, Group, RenderableType
@@ -14,6 +14,26 @@ from speakup.models import SystemSnapshot
 
 def _optional(value: str | None) -> str:
     return value if value else "not available"
+
+
+def _ordinal(day: int) -> str:
+    """Return the day number with an ordinal suffix, e.g. 1st, 2nd, 3rd, 4th."""
+    if 11 <= (day % 100) <= 13:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+    return f"{day}{suffix}"
+
+
+def _format_local_time(dt: datetime) -> str:
+    """Format a datetime in local time as e.g. '11:00 a.m. 29th October, 2026'."""
+    local = dt.astimezone()
+    hour = local.hour % 12 or 12
+    minute = local.strftime("%M")
+    am_pm = "a.m." if local.hour < 12 else "p.m."
+    day = _ordinal(local.day)
+    month_year = local.strftime("%B, %Y")
+    return f"{hour}:{minute} {am_pm} {day} {month_year}"
 
 
 def _panel(title: str, renderable: RenderableType, color: str) -> Panel:
@@ -56,7 +76,7 @@ def render_snapshot(snapshot: SystemSnapshot, console: Console | None = None) ->
 
 
 def snapshot_renderable(snapshot: SystemSnapshot, width: int) -> RenderableType:
-    captured_at = snapshot.captured_at.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
+    captured_at = _format_local_time(snapshot.captured_at)
     renderables: list[RenderableType] = [
         _report_header("System Meter", captured_at, "Live system snapshot")
     ]
@@ -185,7 +205,7 @@ def render_doctor_report(
             soft_wrap=True,
         )
 
-    captured_at = snapshot.captured_at.astimezone(UTC).strftime("%Y-%m-%d %H:%M:%S UTC")
+    captured_at = _format_local_time(snapshot.captured_at)
     console.print(
         _report_header(
             "System Meter Doctor",

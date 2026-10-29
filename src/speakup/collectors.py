@@ -1,4 +1,4 @@
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timezone
 import platform
 
 import psutil
@@ -136,7 +136,7 @@ def collect_uptime_seconds(captured_at: datetime) -> int:
 
 
 def collect_snapshot() -> SystemSnapshot:
-    captured_at = datetime.now(UTC)
+    captured_at = datetime.now(timezone.utc).astimezone()
     system = collect_system_info()
     cpu = collect_cpu_info()
     memory = collect_memory_info()
